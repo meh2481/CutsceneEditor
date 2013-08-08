@@ -1,9 +1,9 @@
-objects := 3DObject.o Cursor.o Image.o Engine.o Object.o SceneLayer.o Text.o ballGun.o globaldefs.o hud.o main.o myEngine.o myEngine_new.o myEngine_retro.o Interpolate.o
+objects := 3DObject.o Cursor.o Image.o Engine.o Object.o SceneLayer.o Text.o globaldefs.o hud.o main.o tinyxml2.o Interpolate.o cutsceneEngine.o
 libs := -lGL -lGLU -lSDLmain -lSDL -lSDL_image -lvorbis -lvorbisfile -lopenal -logg -ltinyxml2 -lttvfs -lBox2D
 
-all: Heartlight++
+all: CutsceneEngine
 
-Heartlight++: $(objects)
+CutsceneEngine: $(objects)
 	g++ -o $@ $^ $(libs)
 
 %.o: %.cpp
@@ -12,4 +12,4 @@ Heartlight++: $(objects)
 -include $(objects:.o=.d)
 
 clean:
-	rm -f *.o *.d Heartlight++
+	rm -f *.o *.d CutsceneEngine
