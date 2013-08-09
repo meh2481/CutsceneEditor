@@ -1,3 +1,7 @@
+/*
+ CutsceneEditor source - 3DObject.cpp
+ Copyright (c) 2013 Mark Hutcheson
+*/
 #include "3DObject.h"
 #include <sstream>
 #include <set>

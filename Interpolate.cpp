@@ -1,3 +1,7 @@
+/*
+ CutsceneEditor source - Interpolate.cpp
+ Copyright (c) 2013 Mark Hutcheson
+*/
 #include "Interpolate.h"
 
 

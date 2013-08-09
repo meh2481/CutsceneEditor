@@ -1,7 +1,7 @@
 /*
-    Heartlight++ source - globaldefs.h
+    CutsceneEditor source - globaldefs.h
     Global definitions for data types
-    Copyright (c) 2012 Mark Hutcheson
+    Copyright (c) 2013 Mark Hutcheson
 */
 #ifndef GLOBALDEFS_H
 #define GLOBALDEFS_H
@@ -30,8 +30,8 @@ using namespace tinyxml2;
 #define Point b2Vec2    //Our point structure
 #define Vec2 Point
 #define PI 3.1415926535 //Close enough for my calculations
-#define DEG2RAD 3.141593f / 180.0f  //Convert degrees to radians
-#define RAD2DEG 180.0f / 3.141593f  //Convert radians to degrees
+#define DEG2RAD PI/180.0f  //Convert degrees to radians
+#define RAD2DEG 180.0f/PI  //Convert radians to degrees
 #define DIFF_EPSILON 0.0000001      //HACK: How much different two vectors must be to register as a difference
 
 
@@ -90,7 +90,7 @@ DWORD colorFromString(string s);    //Get a color from comma-separated values in
 int32_t randInt(int32_t min, int32_t max);  //Get a random integer
 float32 randFloat(float32 min, float32 max);        //Get a random float32
 #ifdef __APPLE__
-//returns the closest power of two value
+//returns the closest power of two value larger than given value. Because textures.
 int power_of_two(int input);
 #endif
 

@@ -1,7 +1,6 @@
 /*
-    Heartlight++ source - globaldefs.cpp
-    Helper functions for various uses
-    Copyright (c) 2012 Mark Hutcheson
+ CutsceneEditor source - globaldefs.cpp
+ Copyright (c) 2013 Mark Hutcheson
 */
 
 #include "globaldefs.h"

@@ -1,5 +1,7 @@
-//Header for parallax scene layer stuff
-//SceneLayer.h
+/*
+ CutsceneEditor source - SceneLayer.h
+ Copyright (c) 2013 Mark Hutcheson
+*/
 #ifndef SCENELAYER_H
 #define SCENELAYER_H
 

@@ -1,3 +1,7 @@
+/*
+ CutsceneEditor source - 3DObject.h
+ Copyright (c) 2013 Mark Hutcheson
+*/
 #ifndef _3D_OBJ_H
 #define _3D_OBJ_H
 

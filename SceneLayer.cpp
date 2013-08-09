@@ -1,5 +1,7 @@
-//Source for parallaxLayers and drawing them
-//SceneLayer.cpp
+/*
+ CutsceneEditor source - SceneLayer.cpp
+ Copyright (c) 2013 Mark Hutcheson
+*/
 #include "SceneLayer.h"
 
 parallaxLayer::parallaxLayer(Image* img)

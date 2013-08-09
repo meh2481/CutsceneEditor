@@ -1,3 +1,7 @@
+/*
+ CutsceneEditor source - Interpolate.h
+ Copyright (c) 2013 Mark Hutcheson
+*/
 #ifndef INTERPOLATE_H
 #define INTERPOLATE_H
 

@@ -1,6 +1,6 @@
 /*
-    Heartlight++ source - Engine.cpp
-    Copyright (c) 2012 Mark Hutcheson
+    CutsceneEditor source - Engine.cpp
+    Copyright (c) 2013 Mark Hutcheson
 */
 
 #include "Engine.h"

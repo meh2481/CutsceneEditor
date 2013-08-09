@@ -1,6 +1,6 @@
 /*
-    Heartlight++ source - hud.cpp
-    Copyright (c) 2012 Mark Hutcheson
+ CutsceneEditor source - hud.cpp
+ Copyright (c) 2013 Mark Hutcheson
 */
 
 #include "hud.h"

@@ -1,7 +1,7 @@
 /*
-    Heartlight++ source - Text.h
+    CutsceneEditor source - Text.h
     Class for ease of drawing bitmapped fonts
-    Copyright (c) 2012 Mark Hutcheson
+    Copyright (c) 2013 Mark Hutcheson
 */
 #ifndef TEXT_H
 #define TEXT_H

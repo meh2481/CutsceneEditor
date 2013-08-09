@@ -1,6 +1,6 @@
 /*
-    Heartlight++ source - Engine.h
-    Copyright (c) 2012 Mark Hutcheson
+    CutsceneEditor source - Engine.h
+    Copyright (c) 2013 Mark Hutcheson
 */
 
 #ifndef ENGINE_H

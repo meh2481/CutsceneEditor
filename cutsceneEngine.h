@@ -1,6 +1,6 @@
 /*
     CutsceneEditor source - cutsceneEngine.h
-    Copyright (c) 2012 Mark Hutcheson
+    Copyright (c) 2013 Mark Hutcheson
 */
 #ifndef CUTSCENEENGINE_H
 #define CUTSCENEENGINE_H
@@ -11,7 +11,7 @@
 class CutsceneEngine : public Engine
 {
 private:
-  
+  list<obj*> m_l
 
 protected:
     void frame();
@@ -24,6 +24,9 @@ public:
     ~CutsceneEngine();
 
     void hudSignalHandler(string sSignal);  //For handling signals that come from the HUD
+    
+    //Program-specific functions
+    
 };
 
 void signalHandler(string sSignal); //Stub function for handling signals that come in from our HUD, and passing them on to myEngine

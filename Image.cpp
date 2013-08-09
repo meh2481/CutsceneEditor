@@ -1,7 +1,6 @@
 /*
-    Heartlight++ source - Image.cpp
-    Class for drawing images to the screen easily
-    Copyright (c) 2012 Mark Hutcheson
+ CutsceneEditor source - Image.cpp
+ Copyright (c) 2013 Mark Hutcheson
 */
 
 #include "Image.h"

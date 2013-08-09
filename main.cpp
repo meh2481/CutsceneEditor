@@ -1,6 +1,6 @@
 /*
-    Heartlight++ source - main.cpp
-    Copyright (c) 2012 Mark Hutcheson
+    CutsceneEditor source - main.cpp
+    Copyright (c) 2013 Mark Hutcheson
 */
 
 #include "cutsceneEngine.h"

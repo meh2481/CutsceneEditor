@@ -1,6 +1,6 @@
 /*
-    Heartlight++ source - Text.cpp
-    Copyright (c) 2012 Mark Hutcheson
+    CutsceneEditor source - Text.cpp
+    Copyright (c) 2013 Mark Hutcheson
 */
 
 #include "Text.h"

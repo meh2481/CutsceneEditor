@@ -1,7 +1,6 @@
 /*
-    Heartlight++ source - hud.h
-    Base class for HUD (Heads Up Display) items
-    Copyright (c) 2012 Mark Hutcheson
+ CutsceneEditor source - hud.h
+ Copyright (c) 2013 Mark Hutcheson
 */
 
 #ifndef HUDITEM_H

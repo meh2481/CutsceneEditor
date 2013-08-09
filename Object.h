@@ -1,7 +1,6 @@
 /*
-    Heartlight++ source - Object.h
-    Class for objects within the game
-    Copyright (c) 2012 Mark Hutcheson
+    CutsceneEditor source - Object.h
+    Copyright (c) 2013 Mark Hutcheson
 */
 
 #ifndef OBJECT_H
