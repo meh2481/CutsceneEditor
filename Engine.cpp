@@ -46,8 +46,6 @@ bool Engine::_frame()
         m_physicsWorld->Step(m_fTargetTime, VELOCITY_ITERATIONS, PHYSICS_ITERATIONS);
         //Use cycle time for everything else
         //float32 fCycleTime = getTime() - m_fLastCycle;
-        if(m_cursor != NULL)
-          m_cursor->update(m_fTargetTime);
         _interpolations(m_fTargetTime);
         frame();
         _render();
@@ -72,9 +70,7 @@ void Engine::_render()
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef( 0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
-    glClear(GL_DEPTH_BUFFER_BIT); //Draw cursor over everything
-    if(m_cursor != NULL && m_bShowCursor)    //Draw cursor if it's there and if we should
-        m_cursor->draw(m_ptCursorPos);
+  //glClear(GL_DEPTH_BUFFER_BIT); //Draw cursor over everything
 	glPopMatrix();
 	
     // End rendering and update the screen
@@ -85,7 +81,6 @@ Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 {
     b2Vec2 gravity(0.0, 9.8);  //Vector for our world's gravity
     m_physicsWorld = new b2World(gravity);
-    m_cursor = NULL;
     m_ptCursorPos.SetZero();
     m_physicsWorld->SetAllowSleeping(true);
     m_iWidth = iWidth;
@@ -110,9 +105,6 @@ Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 
 Engine::~Engine()
 {
-    //Clear up our object map
-    clearObjects();
-
     //Clean up our image map
     clearImages();
     
@@ -132,19 +124,6 @@ Engine::~Engine()
 	delete m_physicsWorld;
 
 	SDL_Quit();
-}
-
-void Engine::clearObjects()
-{
-    //Clean up our object list
-    for(multimap<float32, Object*>::iterator i = m_mObjects.begin(); i != m_mObjects.end(); i++)
-    {
-        b2Body* bod = i->second->getBody();
-        if(bod != NULL)
-            m_physicsWorld->DestroyBody(bod);
-        delete (*i).second;
-    }
-    m_mObjects.clear();
 }
 
 void Engine::clearImages()
@@ -228,44 +207,6 @@ void Engine::createSound(string sPath, string sName)
     return i->second; //Return this sound
 }*/
 
-void Engine::addObject(Object* obj)
-{
-    if(obj == NULL) return;
-    pair<float32, Object*> objPair;
-    objPair.first = obj->_getDepthID();
-    objPair.second = obj;
-    m_mObjects.insert(objPair);
-}
-
-void Engine::updateObjects()
-{
-    for(multimap<float32, Object*>::iterator i = m_mObjects.begin(); i != m_mObjects.end(); i++)
-    {
-        if(!(*i).second->update())  //Remove this object if it returns true
-        {
-            multimap<float32, Object*>::iterator j = i;
-            j--;                    //Hang onto map item before this before deleting, since the erase() method seems to do undefined things with
-                                    // the original iterator. At least Valgrind thinks so.
-            b2Body* bod = i->second->getBody();
-            if(bod != NULL)
-                m_physicsWorld->DestroyBody(bod);
-            delete (*i).second;
-            m_mObjects.erase(i);
-            i = j;
-        }
-    }
-
-    //Update all object frames also (outside loop so frames aren't put out of sync)
-    for(multimap<float32, Object*>::iterator i = m_mObjects.begin(); i != m_mObjects.end(); i++)
-        (*i).second->updateFrame();
-}
-
-void Engine::drawObjects()
-{
-    for(multimap<float32, Object*>::iterator i = m_mObjects.begin(); i != m_mObjects.end(); i++)
-        (*i).second->draw();
-}
-
 void Engine::playSound(string sName, int volume, int pan, float32 pitch)
 {
     //HEFFECT eff = _getEffect(sName);
@@ -310,13 +251,6 @@ void Engine::setFramerate(float32 fFramerate)
         m_fTargetTime = FLT_MAX;    //Avoid division by 0
     else
         m_fTargetTime = 1.0 / m_fFramerate;
-}
-
-void Engine::setCursor(Cursor* cur)
-{
-    //if(m_cursor != NULL)
-    //    delete m_cursor;
-    m_cursor = cur;
 }
 
 void Engine::setup_sdl()

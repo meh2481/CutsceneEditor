@@ -11,7 +11,6 @@
 #include "Object.h"
 #include "Text.h"
 #include "hud.h"
-#include "Cursor.h"
 #include "3DObject.h"
 #include "Interpolate.h"
 #include <map>
@@ -28,7 +27,6 @@ private:
     //Variables for use by the engine
 //    HGE* m_hge;
     b2World* m_physicsWorld;
-    Cursor* m_cursor;
     Point m_ptCursorPos;
     bool  m_bShowCursor;
     float32 m_fFramerate;
@@ -38,7 +36,6 @@ private:
     map<string, string> m_mImageNames;  //And names of images
 //    map<string, HEFFECT> m_mSounds; //Sound handler
     map<string, string> m_mSoundNames; //And names of sounds
-    multimap<float32, Object*> m_mObjects;       //Object handler
     list<Interpolate*> m_lInterpolations;  //Keep track of stuff that's interpolating
 //    HCHANNEL m_MusicChannel;        //Sound channel we play our music on
     bool m_bFirstMusic; //Don't stop a previous song playing if there is none
@@ -84,10 +81,6 @@ public:
     Image* getImage(string sName);  //Retrieves an image from the name
     void createImage(string sPath, string sName); //Creates an image with this name from this file path
     void createSound(string sPath, string sName);   //Creates a sound from this name and file path
-    void addObject(Object* obj);    //Add an object to the object handler
-    void updateObjects();           //update all objects in the game
-    void drawObjects();   //draw all objects in the game
-    void clearObjects();    //Destroy all objects, freeing memory
     void clearImages();     //Free memory associated with the images in our image map
     virtual void playSound(string sName, int volume = 100, int pan = 0, float32 pitch = 1.0);     //Play a sound
     void playMusic(string sName, int volume = 100, int pan = 0, float32 pitch = 1.0);     //Play looping music, or resume paused music
@@ -98,12 +91,9 @@ public:
     float32 getTime()      {return (float32)SDL_GetTicks()/1000.0;}; //Get the time the engine's been running
     Rect getScreenRect()    {Rect rc = {0,0,getWidth(),getHeight()}; return rc;};
     b2Body* createBody(b2BodyDef* bdef) {return m_physicsWorld->CreateBody(bdef);};
-    void setCursor(Cursor* cur);
     Point getCursorPos()    {return m_ptCursorPos;};
     void setCursorPos(int32_t x, int32_t y);
     void setCursorPos(Point ptPos)  {setCursorPos(ptPos.x, ptPos.y);};
-    void showCursor()   {m_bShowCursor = true;};
-    void hideCursor()   {m_bShowCursor = false;};
     void setGravity(Point ptGravity)    {m_physicsWorld->SetGravity(ptGravity);};
     void setGravity(float32 x, float32 y)   {setGravity(Point(x,y));};
     void changeScreenResolution(float32 w, float32 h);  //Change resolution mid-game and reload OpenGL textures as needed

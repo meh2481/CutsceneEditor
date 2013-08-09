@@ -30,7 +30,7 @@ CutsceneEngine::~CutsceneEngine()
 
 void CutsceneEngine::frame()
 {
-    updateObjects();    //Update the objects in the game
+    //updateObjects();    //Update the objects in the game
 }
 
 void CutsceneEngine::draw()
