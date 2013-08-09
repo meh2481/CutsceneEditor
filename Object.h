@@ -31,19 +31,22 @@ public:
 
 class obj
 {
-protected:
-    list<physSegment*> segments;
-
 public:
+    list<physSegment*> segments;
+    list<obj*> children;
+    
     obj();
     ~obj();
     
     Point pos;
     float32 rot;
     void* usr;
+    obj* parent;
 
     void draw();
     void addSegment(physSegment* seg);
+    void addChild(obj* object);
+    
 
 };
 

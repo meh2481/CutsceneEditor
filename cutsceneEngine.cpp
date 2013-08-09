@@ -48,6 +48,7 @@ void CutsceneEngine::draw()
 
 void CutsceneEngine::init()
 {
+  loadActors("./segments/");
 }
 
 
@@ -92,3 +93,12 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             }
 }
 
+void CutsceneEngine::loadActors(string sFolderPath)
+{
+ 
+}
+
+void CutsceneEngine::drawActors()
+{
+  
+}

@@ -13,6 +13,7 @@ obj::obj()
   pos.x = pos.y = 0.0f;
   rot = 0.0f;
   usr = NULL;
+  parent = NULL;
 }
 
 obj::~obj()
@@ -56,6 +57,11 @@ void obj::draw()
 void obj::addSegment(physSegment* seg)
 {
     segments.push_back(seg);
+}
+
+void obj::addChild(obj* object)
+{
+  children.push_back(object);
 }
 
 

@@ -11,7 +11,7 @@
 class CutsceneEngine : public Engine
 {
 private:
-  list<obj*> m_l
+  list<obj*> m_lActors;
 
 protected:
     void frame();
@@ -26,7 +26,8 @@ public:
     void hudSignalHandler(string sSignal);  //For handling signals that come from the HUD
     
     //Program-specific functions
-    
+    void loadActors(string sFolderPath);
+    void drawActors();
 };
 
 void signalHandler(string sSignal); //Stub function for handling signals that come in from our HUD, and passing them on to myEngine
