@@ -12,6 +12,10 @@ class CutsceneEngine : public Engine
 {
 private:
   list<obj*> m_lActors;
+  ttvfs::VFSHelper vfs;
+  Vec3 CameraPos;
+  list<obj*>::iterator m_CurSelectedActor;
+  Color selectionPulse;
 
 protected:
     void frame();

@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 
     eng->setFramerate(60);
     eng->start(); //Get the engine rolling
+	errlog << "Deleting engine" << endl;
     delete eng;
 #ifdef __APPLE__
     errlog << "Closing FreeImage" << endl;

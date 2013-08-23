@@ -7,7 +7,7 @@
 ofstream errlog("err.log");
 
 
-GLfloat LightAmbient[]  = { 0.5f, 0.5f, 0.5f, 1.0f };
+GLfloat LightAmbient[]  = { 0.1f, 0.1f, 0.1f, 1.0f };
 /* Diffuse Light Values */
 GLfloat LightDiffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 /* Light Position */
@@ -106,9 +106,11 @@ Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 Engine::~Engine()
 {
     //Clean up our image map
+	errlog << "Clearing images" << endl;
     clearImages();
     
     //Clean up interpolations that are currently going on
+	errlog << "Clearing interps" << endl;
     clearInterpolations();
 
     //TODO Any form of OpenGL cleanup?
@@ -121,8 +123,9 @@ Engine::~Engine()
     }*/
 
     // Clean up and shutdown
+	errlog << "Deleting phys world" << endl;
 	delete m_physicsWorld;
-
+	errlog << "Quit SDL" << endl;
 	SDL_Quit();
 }
 
@@ -159,6 +162,7 @@ void Engine::fillRect(float32 x1, float32 y1, float32 x2, float32 y2, uint8_t re
     glVertex3f((2.0*(float32)m_iWidth/(float32)m_iHeight)*((GLfloat)x2/(GLfloat)m_iWidth-0.5), -2.0*(GLfloat)y2/(GLfloat)m_iHeight+1.0, 0.0);
     glVertex3f((2.0*(float32)m_iWidth/(float32)m_iHeight)*((GLfloat)x2/(GLfloat)m_iWidth-0.5), -2.0*(GLfloat)y1/(GLfloat)m_iHeight+1.0, 0.0);
     glEnd();
+    glColor4f(1.0,1.0,1.0,1.0);	//Back to normal
 }
 
 void Engine::fillRect(Rect rc, uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
@@ -368,11 +372,12 @@ void Engine::setup_opengl()
     glLoadIdentity();
     glTranslatef( 0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
 	glPushMatrix();
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 	
 	//Set up lighting
     glShadeModel(GL_SMOOTH);
-    glEnable( GL_LIGHT0 );
+    //glEnable( GL_LIGHT0 );
+    glEnable( GL_LIGHT1 );
     glEnable( GL_COLOR_MATERIAL );
 
     // Setup The Ambient Light

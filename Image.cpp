@@ -100,7 +100,7 @@ void Image::_load(string sFilename)
   // could not load filename
   if(!surface)
   {
-    std::cout << "No img " << sFilename << std::endl;
+    errlog << "No img " << sFilename << std::endl;
     m_hTex = 0;
     return;
   }

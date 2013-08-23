@@ -24,11 +24,14 @@ obj::~obj()
 
 void obj::draw()
 {
+	glPushMatrix();
+	glTranslatef(pos.x, 0.0f, pos.y);	//X and Y are messed up for us. Ah, well
+	glRotatef(rot*RAD2DEG, 0.0f, 0.0f, 1.0f);
     for(list<physSegment*>::iterator i = segments.begin(); i != segments.end(); i++)
     {
         //Point ptPos(0,0);
         //float32 rot = 0.0;
-        if((*i)->body != NULL)
+        /*if((*i)->body != NULL)
         {
             pos = (*i)->body->GetPosition();
 			pos *= SCALE_UP_FACTOR;
@@ -37,10 +40,7 @@ void obj::draw()
 			//	(*i)->layer->image->drawCentered(ptPos.x + (*i)->layer->pos.x*cos(rot) - (*i)->layer->pos.y*sin(rot),
       //                                ptPos.y + (*i)->layer->pos.y*cos(rot) + (*i)->layer->pos.x*sin(rot),
       //                                (*i)->layer->rot + rot, (*i)->layer->scale.x, (*i)->layer->scale.y);
-        }
-        glPushMatrix();
-        glTranslatef(pos.x, pos.y, 0.0f);
-        glRotatef(rot*RAD2DEG, 0.0f, 0.0f, 1.0f);
+        }*/
         if((*i)->obj3D != NULL)
         {
           (*i)->obj3D->render();
@@ -49,9 +49,12 @@ void obj::draw()
         {
           (*i)->layer->draw();
         }
-        glPopMatrix();
         
     }
+	//Draw children of this object translated/rotated
+	for(list<obj*>::iterator i = children.begin(); i != children.end(); i++)
+		(*i)->draw();
+	glPopMatrix();
 }
 
 void obj::addSegment(physSegment* seg)
