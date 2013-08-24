@@ -38,6 +38,7 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
     inter->setMaxVal(1.0f, false);
     inter->calculateIncrement(1.0f, 1.0f);
     addInterpolation(inter);
+	showCursor();
 }
 
 CutsceneEngine::~CutsceneEngine()
@@ -80,8 +81,6 @@ void CutsceneEngine::init()
 void CutsceneEngine::hudSignalHandler(string sSignal)
 {
 }
-
-bool isMouseDown = false;
 
 void CutsceneEngine::handleEvent(SDL_Event event)
 {
@@ -129,7 +128,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             }
             break;
 		
-		case SDL_MOUSEBUTTONDOWN:
+		/*case SDL_MOUSEBUTTONDOWN:
             if(event.button.button == SDL_BUTTON_LEFT)
             {
 				isMouseDown = true;
@@ -145,18 +144,17 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             {
 				isMouseDown = false;
             }
-            break;
+            break;*/
 
         case SDL_MOUSEMOTION:
-            if(isMouseDown && m_CurSelectedActor != m_lActors.end())
+            if(getCursorDown(LMB) && m_CurSelectedActor != m_lActors.end())
             {
-				(*m_CurSelectedActor)->pos.x += event.motion.xrel/(1000.0);
-				(*m_CurSelectedActor)->pos.y += event.motion.yrel/(1000.0);
-              //glTranslatef(event.motion.xrel/(scale_amt*1000.0), -event.motion.yrel/(scale_amt*1000.0), 0.0);
-			  
-              //CameraPos.x += event.motion.xrel/(1000.0);
-              //CameraPos.y -= event.motion.yrel/(1000.0);
-              //cout << "pos: " << fXpos << ", " << fYpos << endl;
+				(*m_CurSelectedActor)->pos.x += event.motion.xrel/(180.0);
+				(*m_CurSelectedActor)->pos.y += event.motion.yrel/(180.0);
+            }
+            else if(getCursorDown(RMB) && m_CurSelectedActor != m_lActors.end())
+            {
+				(*m_CurSelectedActor)->rot += event.motion.xrel/170.0;
             }
             break;
 	}
@@ -169,11 +167,15 @@ void CutsceneEngine::loadActors(string sFolderPath)
 	ttvfs::GetFileListRecursive(sFolderPath, lFiles);
 	for(ttvfs::StringList::iterator i = lFiles.begin(); i != lFiles.end(); i++)
 	{
-		if((*i).find(".obj", (*i).size() - 4) != string::npos)
+		//if((*i).find(".obj", (*i).size() - 4) != string::npos)
+		if((*i).find(".tiny3d", (*i).size() - 7) != string::npos)
 		{
 			//Use PNG with this filename as texture
 			string sPNG = *i;
-			sPNG.replace((*i).size() - 4, 4, ".png");
+			//sPNG.replace((*i).size() - 4, 4, ".png");
+			sPNG.erase((*i).size() - 7);
+			sPNG.append(".png");
+			//cout << "Obj file: " << *i << endl << "image: " << sPNG << endl << endl;
 			Object3D* o3d = new Object3D((*i), sPNG);
 			obj* o = new obj();
 			physSegment* seg = new physSegment();

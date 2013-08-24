@@ -48,6 +48,7 @@ public:
     ~Object3D();
 
     void fromOBJFile(string sFilename);
+	void fromTiny3DFile(string sFilename);
     void setTexture(string sFilename);
 
     void render();

@@ -15,6 +15,10 @@
 #include "Interpolate.h"
 #include <map>
 
+#define LMB	1
+#define RMB	0
+#define MMB 2
+
 struct resolution
 {
   int w;
@@ -94,6 +98,9 @@ public:
     Point getCursorPos()    {return m_ptCursorPos;};
     void setCursorPos(int32_t x, int32_t y);
     void setCursorPos(Point ptPos)  {setCursorPos(ptPos.x, ptPos.y);};
+	bool getCursorDown(int iButtonCode);
+	void showCursor()	{SDL_ShowCursor(1);};
+	void hideCursor()	{SDL_ShowCursor(0);};
     void setGravity(Point ptGravity)    {m_physicsWorld->SetGravity(ptGravity);};
     void setGravity(float32 x, float32 y)   {setGravity(Point(x,y));};
     void changeScreenResolution(float32 w, float32 h);  //Change resolution mid-game and reload OpenGL textures as needed

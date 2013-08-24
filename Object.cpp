@@ -26,7 +26,7 @@ void obj::draw()
 {
 	glPushMatrix();
 	glTranslatef(pos.x, 0.0f, pos.y);	//X and Y are messed up for us. Ah, well
-	glRotatef(rot*RAD2DEG, 0.0f, 0.0f, 1.0f);
+	glRotatef(rot*RAD2DEG, 0.0f, 1.0f, 0.0f);
     for(list<physSegment*>::iterator i = segments.begin(); i != segments.end(); i++)
     {
         //Point ptPos(0,0);

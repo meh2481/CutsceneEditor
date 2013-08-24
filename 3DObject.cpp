@@ -3,15 +3,23 @@
  Copyright (c) 2013 Mark Hutcheson
 */
 #include "3DObject.h"
+#include "tiny3d.h"
 #include <sstream>
 #include <set>
+#include <stdio.h>
+#include <stdlib.h>
 using namespace std;
+using namespace tiny3d;
 
 Object3D::Object3D(string sOBJFile, string sImgFile)
 {
     m_obj = m_tex = 0;
     setTexture(sImgFile);
-    fromOBJFile(sOBJFile);
+	//Load with OBJ loader or Tiny3D loader, depending on file type (Tiny3D should be _far_ faster)
+	if(sOBJFile.find(".obj", sOBJFile.size()-4) != string::npos)
+		fromOBJFile(sOBJFile);
+	else
+		fromTiny3DFile(sOBJFile);
     pos.x = pos.y = pos.z = 0.0f;
     rot.x = rot.y = rot.z = 0.0f;
     scale.x = scale.y = scale.z = 1.0f;
@@ -24,6 +32,10 @@ Object3D::Object3D(string sOBJFile, string sImgFile)
 Object3D::Object3D()
 {
   m_obj = m_tex = 0;
+  pos.x = pos.y = pos.z = 0.0f;
+  rot.x = rot.y = rot.z = 0.0f;
+  scale.x = scale.y = scale.z = 1.0f;
+  angle = 0.0f;
   _add3DObjReload(this);  
 }
 
@@ -155,7 +167,7 @@ void Object3D::fromOBJFile(string sFilename)
     for(list<Face>::iterator i = lFaces.begin(); i != lFaces.end(); i++)
     {
         if(bNorms)
-            glNormal3f(vNormals[i->norm1-1].x, vNormals[i->norm1-1].y, vNormals[i->norm1-1].z);  //TODO
+            glNormal3f(vNormals[i->norm1-1].x, vNormals[i->norm1-1].y, vNormals[i->norm1-1].z);
         if(bUVs)
             glTexCoord2f(vUVs[i->uv1].u, vUVs[i->uv1].v);
         glVertex3f(vVerts[i->v1-1].x, vVerts[i->v1-1].y, vVerts[i->v1-1].z);
@@ -175,6 +187,103 @@ void Object3D::fromOBJFile(string sFilename)
 
     glEndList();
 
+}
+
+//Fall back on pure C functions for speed
+void Object3D::fromTiny3DFile(string sFilename)
+{
+	FILE* fp = fopen(sFilename.c_str(), "rb");
+	if(fp == NULL)
+	{
+		cout << "Error: Input tiny3d file " << sFilename << " does not exist." << endl;
+		return;
+	}
+	
+	//Read header
+	tiny3dHeader header;
+	if(fread(&header, 1, sizeof(tiny3dHeader), fp) != sizeof(tiny3dHeader))
+	{
+		cout << "Error: Unable to read in tiny3d header from file " << sFilename << endl;
+		fclose(fp);
+		return;
+	}
+	
+	//Read in normals
+	normal* normals = (normal*)malloc(sizeof(normal) * header.numNormals);
+	if(fread(normals, 1, sizeof(normal)*header.numNormals, fp) != sizeof(normal) * header.numNormals)
+	{
+		cout << "Error: Unable to read normals from tiny3d file " << sFilename << endl;
+		fclose(fp);
+		return;
+	}
+	
+	//Read in UVs
+	uv* uvs = (uv*)malloc(sizeof(uv) * header.numUVs);
+	if(fread(uvs, 1, sizeof(uv)*header.numUVs, fp) != sizeof(uv) * header.numUVs)
+	{
+		cout << "Error: Unable to read UVs from tiny3d file " << sFilename << endl;
+		fclose(fp);
+		return;
+	}
+	
+	//Read in vertices
+	vert* vertices = (vert*)malloc(sizeof(vert) * header.numVertices);
+	if(fread(vertices, 1, sizeof(vert)*header.numVertices, fp) != sizeof(vert) * header.numVertices)
+	{
+		cout << "Error: Unable to read vertices from tiny3d file " << sFilename << endl;
+		fclose(fp);
+		return;
+	}
+	
+	//Read in faces
+	face* faces = (face*)malloc(sizeof(face) * header.numFaces);
+	if(fread(faces, 1, sizeof(face)*header.numFaces, fp) != sizeof(face) * header.numFaces)
+	{
+		cout << "Error: Unable to read faces from tiny3d file " << sFilename << endl;
+		fclose(fp);
+		return;
+	}
+	
+	fclose(fp);
+	
+	//Construct OpenGL object
+    m_obj = glGenLists(1);
+    glNewList(m_obj,GL_COMPILE);
+	
+    //Loop through and add faces
+    glBegin(GL_TRIANGLES);
+    for(int i = 0; i < header.numFaces; i++)
+    {
+		vert v = vertices[faces[i].v1];
+		uv UV = uvs[faces[i].uv1];
+		normal norm = normals[faces[i].norm1];
+        glNormal3f(norm.x, norm.y, norm.z);
+        glTexCoord2f(UV.u, UV.v);
+        glVertex3f(v.x, v.y, v.z);
+        
+		v = vertices[faces[i].v2];
+		UV = uvs[faces[i].uv2];
+		norm = normals[faces[i].norm2];
+        glNormal3f(norm.x, norm.y, norm.z);
+        glTexCoord2f(UV.u, UV.v);
+        glVertex3f(v.x, v.y, v.z);
+		
+		v = vertices[faces[i].v3];
+		UV = uvs[faces[i].uv3];
+		norm = normals[faces[i].norm3];
+        glNormal3f(norm.x, norm.y, norm.z);
+        glTexCoord2f(UV.u, UV.v);
+        glVertex3f(v.x, v.y, v.z);
+    }
+
+    glEnd();
+
+    glEndList();
+	
+	free(normals);
+	free(vertices);
+	free(uvs);
+	free(faces);
 }
 
 void Object3D::setTexture(string sFilename)
@@ -314,6 +423,10 @@ void Object3D::_reload()
 {
   setTexture(m_sTexFilename);
   fromOBJFile(m_sObjFilename);
+  if(m_sObjFilename.find(".obj", m_sObjFilename.size()-4) != string::npos)
+    fromOBJFile(m_sObjFilename);
+  else
+    fromTiny3DFile(m_sObjFilename);
 }
 
 static set<Object3D*> sg_objs;

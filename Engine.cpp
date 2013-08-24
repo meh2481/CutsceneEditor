@@ -497,7 +497,23 @@ void Engine::clearInterpolations()
   m_lInterpolations.clear();
 }
 
-
+bool Engine::getCursorDown(int iButtonCode)
+{
+	Uint8 ms = SDL_GetMouseState(NULL, NULL);
+	switch(iButtonCode)
+	{
+		case LMB:
+			return(ms & SDL_BUTTON(SDL_BUTTON_LEFT));
+		case RMB:
+			return(ms & SDL_BUTTON(SDL_BUTTON_RIGHT));
+		case MMB:
+			return(ms & SDL_BUTTON(SDL_BUTTON_MIDDLE));
+		default:
+			cout << "Unsupported mouse code: " << iButtonCode << endl;
+			break;
+	}
+	return false;
+}
 
 
 
