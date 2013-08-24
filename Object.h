@@ -21,11 +21,17 @@ class physSegment
 {
 public:
     b2Body*         body;
-    parallaxLayer*  layer;
+    Image*  		img;
     Object3D*       obj3D;
+	
+	Point pos;
+	float32 rot;
+	Point scale;
 
     physSegment();
     ~physSegment();
+	
+	void draw();
 
 };
 

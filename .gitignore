@@ -18,4 +18,7 @@ CutsceneEditor
 CutsceneEditor.exe
 err.log
 
+# Editor output
+*.cutscene
+
 

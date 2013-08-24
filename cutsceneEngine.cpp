@@ -4,7 +4,9 @@
 */
 
 #include "cutsceneEngine.h"
+#include "tinyxml2.h"
 #include <float.h>
+#include <sstream>
 
 //For our engine functions to be able to call our Engine class functions - Note that this means there can be no more than one Engine at a time
 //TODO: Think of workaround? How does everything communicate now?
@@ -40,13 +42,14 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
     inter->calculateIncrement(0.4f, 0.5f);
     addInterpolation(inter);
 	showCursor();
-	m_centerDraw = new Object3D("res/selectball.obj", NO_TEXTURE);
+	m_centerDraw = new Object3D("res/selectball.tiny3d", NO_TEXTURE);
 	m_centerDraw->wireframe = true;
 }
 
 CutsceneEngine::~CutsceneEngine()
 {
 	errlog << "~CutsceneEngine" << endl;
+	save("res/editor.cutscene");	//Save our cutscene
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 		delete (*i);
 		
@@ -96,6 +99,9 @@ void CutsceneEngine::init(list<commandlineArg> sArgs)
 			}
 		}
 	}
+	
+	//Load our XML file
+	load("res/editor.cutscene");
 }
 
 
@@ -124,7 +130,13 @@ void CutsceneEngine::handleEvent(SDL_Event event)
                     }
                     break;
 					
-				case SDLK_EQUALS:
+				case SDLK_s:
+					if(keyDown(SDLK_LCTRL) || keyDown(SDLK_RCTRL))
+					{
+						save("res/editor.cutscene");
+					}
+					
+				/*case SDLK_EQUALS:
 					if(m_CurSelectedActor == m_lActors.end())
 						m_CurSelectedActor = m_lActors.begin();
 					else
@@ -136,7 +148,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 						m_CurSelectedActor = m_lActors.end();
 					else
 						m_CurSelectedActor--;
-					break;                    
+					break;*/              
               }
             break;
 
@@ -237,7 +249,10 @@ void CutsceneEngine::drawActors()
 		(*i)->draw();
 		//Draw center
 		glPushMatrix();
-		glColor4f(0.0,1.0,0.0,1.0);
+		if(i == m_CurSelectedActor)
+			glColor4f(1.0,0.0,0.0,1.0);	//Center of current actor is drawn red
+		else
+			glColor4f(0.0,1.0,0.0,1.0);
 		glTranslatef((*i)->pos.x, 0.0f, (*i)->pos.y);
 		glRotatef((*i)->rot*RAD2DEG, 0.0f, 1.0f, 0.0f);
 		glScalef(0.07f, 0.07f, 0.07f);
@@ -289,9 +304,145 @@ list<obj*>::iterator CutsceneEngine::findClosestObject(Vec3 pos)
 	return ret;
 }
 
+void CutsceneEngine::save(string sFilename)
+{
+	errlog << "Saving cutscene XML " << sFilename << endl;
+	XMLDocument* doc = new XMLDocument;
+	XMLElement* root = doc->NewElement("cutscene");
+	
+	//Write actors
+	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+	{
+		writeObject(*i, root, doc);
+	}
+	
+	
+	doc->InsertFirstChild(root);
+	doc->SaveFile(sFilename.c_str());
+	delete doc;
+}
 
+void CutsceneEngine::load(string sFilename)
+{
+	errlog << "Loading cutscene XML " << sFilename << endl;
+	XMLDocument* doc = new XMLDocument;
+	int iErr = doc->LoadFile(sFilename.c_str());
+	if(iErr != XML_NO_ERROR)
+	{
+		errlog << "Error parsing XML file " << sFilename << ": Error " << iErr << endl;
+		delete doc;
+		return;
+	}
+	
+	//Grab root element
+	XMLElement* root = doc->RootElement();
+	if(root == NULL)
+	{
+		errlog << "Error: Root element NULL in XML file " << sFilename << endl;
+		delete doc;
+		return;
+	}
+	
+	//Load actors
+	for(XMLElement* actor = root->FirstChildElement("actor"); actor != NULL; actor = actor->NextSiblingElement("actor"))
+	{
+		obj* object = new obj();
+		readObject(object, actor);
+		m_lActors.push_back(object);
+	}
+}
 
+void writeVec2(XMLElement* elem, string sAttributeName, Point vec)
+{
+	ostringstream oss;
+	oss << vec.x << ", " << vec.y;
+	elem->SetAttribute(sAttributeName.c_str(), oss.str().c_str());
+}
 
+void readVec2(XMLElement* elem, string sAttributeName, Point* vec)
+{
+	const char* cPos = elem->Attribute(sAttributeName.c_str());
+	if(cPos == NULL) return;
+	istringstream iss(cPos);
+	char cDiscard;
+	if(!(iss >> vec->x >> cDiscard >> vec->y))
+		vec->x = vec->y = 0.0f;
+}
 
+void CutsceneEngine::writeObject(obj* object, XMLElement* parent, XMLDocument* doc)
+{
+	XMLElement* actor = doc->NewElement("actor");
+	writeVec2(actor, "pos", object->pos);
+	actor->SetAttribute("rot", object->rot);
+	
+	//Write physics segments
+	for(list<physSegment*>::iterator i = object->segments.begin(); i != object->segments.end(); i++)
+	{
+		XMLElement* segment = doc->NewElement("segment");
+		writeVec2(segment, "offset", (*i)->pos);
+		segment->SetAttribute("rot", (*i)->rot);
+		
+		if((*i)->body != NULL)
+			;	//TODO: Box2D body stuff
+		if((*i)->img != NULL)
+			;	//TODO: Write image stuff
+		if((*i)->obj3D != NULL)
+		{
+			//Write object3D stuff
+			XMLElement* o3d = doc->NewElement("mesh");
+			o3d->SetAttribute("mesh", (*i)->obj3D->getObjFilename().c_str());
+			o3d->SetAttribute("texture", (*i)->obj3D->getTexFilename().c_str());
+			segment->InsertEndChild(o3d);
+		}
+		
+		actor->InsertEndChild(segment);
+	}
+	
+	//Write children
+	for(list<obj*>::iterator i = object->children.begin(); i != object->children.end(); i++)
+		writeObject(*i, actor, doc);	//Recursive call
+		
+	parent->InsertEndChild(actor);
+}
 
+void CutsceneEngine::readObject(obj* object, XMLElement* actor)
+{
+	readVec2(actor, "pos", &(object->pos));
+	actor->QueryFloatAttribute("rot", &(object->rot));
+	
+	//Read physics segments
+	for(XMLElement* segment = actor->FirstChildElement("segment"); segment != NULL; segment = segment->NextSiblingElement("segment"))
+	{
+		physSegment* ps = new physSegment();
+		readVec2(segment, "offset", &(ps->pos));
+		segment->QueryFloatAttribute("rot", &(ps->rot));
+		
+		//TODO: Read Box2D and image stuff
+		
+		//Read Object3D stuff
+		XMLElement* o3d = segment->FirstChildElement("mesh");
+		if(o3d != NULL)
+		{
+			string sMesh, sTex;
+			const char* cdata = o3d->Attribute("mesh");
+			if(cdata != NULL) sMesh = cdata;
+			cdata = o3d->Attribute("texture");
+			if(cdata != NULL) sTex = cdata;
+			
+			Object3D* o = new Object3D(sMesh, sTex);
+			ps->obj3D = o;
+		}
+		
+		object->addSegment(ps);
+	}
+	
+	//Read in child actors
+	for(XMLElement* actor2 = actor->FirstChildElement("actor"); actor2 != NULL; actor2 = actor2->NextSiblingElement("actor"))
+	{
+		obj* object2 = new obj();
+		readObject(object2, actor2);	//Recursive call for child objects
+		m_lActors.push_back(object2);
+		object->addChild(object2);
+	}
+}
 

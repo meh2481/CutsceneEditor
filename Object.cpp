@@ -27,30 +27,9 @@ void obj::draw()
 	glPushMatrix();
 	glTranslatef(pos.x, 0.0f, pos.y);	//X and Y are messed up for us. Ah, well
 	glRotatef(rot*RAD2DEG, 0.0f, 1.0f, 0.0f);
+	//Draw segments of this object
     for(list<physSegment*>::iterator i = segments.begin(); i != segments.end(); i++)
-    {
-        //Point ptPos(0,0);
-        //float32 rot = 0.0;
-        /*if((*i)->body != NULL)
-        {
-            pos = (*i)->body->GetPosition();
-			pos *= SCALE_UP_FACTOR;
-            rot = (*i)->body->GetAngle();
-			//if((*i)->layer != NULL && (*i)->layer->image != NULL)
-			//	(*i)->layer->image->drawCentered(ptPos.x + (*i)->layer->pos.x*cos(rot) - (*i)->layer->pos.y*sin(rot),
-      //                                ptPos.y + (*i)->layer->pos.y*cos(rot) + (*i)->layer->pos.x*sin(rot),
-      //                                (*i)->layer->rot + rot, (*i)->layer->scale.x, (*i)->layer->scale.y);
-        }*/
-        if((*i)->obj3D != NULL)
-        {
-          (*i)->obj3D->render();
-        }
-        if((*i)->layer != NULL)
-        {
-          (*i)->layer->draw();
-        }
-        
-    }
+        (*i)->draw();
 	//Draw children of this object translated/rotated
 	for(list<obj*>::iterator i = children.begin(); i != children.end(); i++)
 		(*i)->draw();
@@ -73,20 +52,41 @@ void obj::addChild(obj* object)
 physSegment::physSegment()
 {
     body = NULL;
-    layer = NULL;
+    img = NULL;
     obj3D = NULL;
+	
+	pos.x = pos.y = 0.0f;
+	rot = 0.0f;
+	scale.x = scale.y = 1.0f;
 }
 
 physSegment::~physSegment()
 {
   if(body != NULL)
     ; //TODO: Free Box2D body
-  if(layer != NULL)
-    delete layer;
+  //if(img != NULL)	//NOTE: Potential memory leak danger if used incorrectly
+  //  delete img;
   if(obj3D != NULL)
     delete obj3D;
 }
 
+void physSegment::draw()
+{
+	glPushMatrix();
+	glTranslatef(pos.x, 0.0f, pos.y);
+	glRotatef(rot*RAD2DEG, 0.0f, 1.0f, 0.0f);
+	if(obj3D != NULL)
+	{
+		obj3D->render();
+	}
+	if(img != NULL)
+	{
+		Rect rcImgPos;
+		rcImgPos.set(0,0,img->getWidth(),img->getHeight());
+		img->drawCentered(pos, rcImgPos, rot, scale.x, scale.y);
+	}
+	glPopMatrix();
+}
 
 
 

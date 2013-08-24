@@ -34,9 +34,19 @@ public:
     void loadActors(string sFolderPath);
     void drawActors();
 	list<obj*>::iterator findClosestObject(Vec3 pos);	//Find object closest to given point
+	
+	//Save and load XML detailing the layout
+	void save(string sFilename);
+	void load(string sFilename);
+	void writeObject(obj* object, XMLElement* parent, XMLDocument* doc);
+	void readObject(obj* object, XMLElement* actor);
 };
 
 void signalHandler(string sSignal); //Stub function for handling signals that come in from our HUD, and passing them on to myEngine
+
+//XML helper functions
+void writeVec2(XMLElement* elem, string sAttributeName, Point vec);	//Write out a 2D point as one XML attribute
+void readVec2(XMLElement* elem, string sAttributeName, Point* vec);	//Read a 2D point from one XML attribute
 
 
 #endif

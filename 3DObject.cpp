@@ -354,6 +354,7 @@ void Object3D::setTexture(string sFilename)
 	if(fif == FIF_UNKNOWN)
 	{
     errlog << "Unknown image type for file " << sFilename << endl;
+	m_tex = 0;
     return;
   }
   
@@ -364,6 +365,7 @@ void Object3D::setTexture(string sFilename)
 	if(!dib)
 	{
     errlog << "Error loading image " << sFilename << endl;
+	m_tex = 0;
     return;
   }  
 	//retrieve the image data
@@ -388,6 +390,7 @@ void Object3D::setTexture(string sFilename)
 	if((bits == 0) || (width == 0) || (height == 0))
 	{
     errlog << "Something went terribly horribly wrong with getting image bits; just sit and wait for the singularity" << endl;
+	m_tex = 0;
     return;
   }
   

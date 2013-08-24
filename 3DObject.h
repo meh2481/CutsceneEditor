@@ -8,7 +8,7 @@
 #include "Image.h"
 #include "globaldefs.h"
 
-#define NO_TEXTURE ""	//Invalid image
+#define NO_TEXTURE "image_none"	//Invalid image
 
 class Vertex
 {
@@ -55,6 +55,10 @@ public:
     void setTexture(string sFilename);
 
     void render();
+	
+	//Accessor methods
+	string getObjFilename()	{return m_sObjFilename;};
+	string getTexFilename()	{return m_sTexFilename;};
 
 
 };
