@@ -4,6 +4,7 @@
 */
 
 #include "cutsceneEngine.h"
+#include <float.h>
 
 //For our engine functions to be able to call our Engine class functions - Note that this means there can be no more than one Engine at a time
 //TODO: Think of workaround? How does everything communicate now?
@@ -39,6 +40,8 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
     inter->calculateIncrement(0.4f, 0.5f);
     addInterpolation(inter);
 	showCursor();
+	m_centerDraw = new Object3D("res/selectball.obj", NO_TEXTURE);
+	m_centerDraw->wireframe = true;
 }
 
 CutsceneEngine::~CutsceneEngine()
@@ -46,6 +49,8 @@ CutsceneEngine::~CutsceneEngine()
 	errlog << "~CutsceneEngine" << endl;
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 		delete (*i);
+		
+	delete m_centerDraw;
 }
 
 void CutsceneEngine::frame()
@@ -171,6 +176,18 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             {
 				(*m_CurSelectedActor)->rot += event.motion.xrel/170.0;
             }
+			else //No button down; choose object to select
+			{
+				Vec3 pos;
+				Point cursorpos = getCursorPos();
+				pos.x = event.motion.x - getWidth()/2.0;
+				pos.y = event.motion.y - getHeight()/2.0;
+				pos.z = 0;
+				
+				pos.x /= 180.0;
+				pos.y /= 180.0;
+				m_CurSelectedActor = findClosestObject(pos);
+			}
             break;
 	}
 		
@@ -212,12 +229,69 @@ void CutsceneEngine::loadActors(string sFolderPath)
 
 void CutsceneEngine::drawActors()
 {
+	glEnable(GL_LIGHTING);
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
-		if(i == m_CurSelectedActor)
+		if(i == m_CurSelectedActor)	//Selected actor pulses red
 			glColor4f(selectionPulse.r, selectionPulse.g, selectionPulse.b, selectionPulse.a);
-		else
-			glColor4f(1.0f,1.0f,1.0f,1.0f);
 		(*i)->draw();
+		//Draw center
+		glPushMatrix();
+		glColor4f(0.0,1.0,0.0,1.0);
+		glTranslatef((*i)->pos.x, 0.0f, (*i)->pos.y);
+		glRotatef((*i)->rot*RAD2DEG, 0.0f, 1.0f, 0.0f);
+		glScalef(0.07f, 0.07f, 0.07f);
+		glDisable(GL_LIGHTING);
+		m_centerDraw->render();
+		glEnable(GL_LIGHTING);
+		glPopMatrix();
+		glColor4f(1.0f,1.0f,1.0f,1.0f);
 	}
+	glDisable(GL_LIGHTING);
+	
+	/* DEBUG: Draw cursor sort of thing where cursor is
+	Vertex pos;
+	Point cursorpos = getCursorPos();
+	pos.x = cursorpos.x - getWidth()/2.0;
+	pos.y = cursorpos.y - getHeight()/2.0;
+	pos.z = 0;
+	
+	pos.x /= 180.0;
+	pos.y /= 180.0;
+	
+	glPushMatrix();
+	glColor4f(0.0,0.0,1.0,1.0);
+	glTranslatef(pos.x, pos.z, pos.y);
+	glScalef(0.01f, 0.01f, 0.01f);
+	m_centerDraw->render();
+	glPopMatrix();
+	glColor4f(1.0f,1.0f,1.0f,1.0f);*/
 }
+
+list<obj*>::iterator CutsceneEngine::findClosestObject(Vec3 pos)
+{
+	list<obj*>::iterator ret = m_lActors.end();
+	float32 closestPos = FLT_MAX;
+	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+	{
+		Vec3 objPos;
+		objPos.x = (*i)->pos.x;
+		objPos.y = (*i)->pos.y;
+		objPos.z = 0.0f;
+		
+		float32 dist = distanceSquared(objPos, pos);
+		if(dist < closestPos)
+		{
+			closestPos = dist;
+			ret = i;
+		}
+	}
+	return ret;
+}
+
+
+
+
+
+
+

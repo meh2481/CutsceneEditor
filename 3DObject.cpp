@@ -20,23 +20,25 @@ Object3D::Object3D(string sOBJFile, string sImgFile)
 		fromOBJFile(sOBJFile);
 	else
 		fromTiny3DFile(sOBJFile);
-    pos.x = pos.y = pos.z = 0.0f;
-    rot.x = rot.y = rot.z = 0.0f;
-    scale.x = scale.y = scale.z = 1.0f;
-    angle = 0.0f;
+    //pos.x = pos.y = pos.z = 0.0f;
+    //rot.x = rot.y = rot.z = 0.0f;
+    //scale.x = scale.y = scale.z = 1.0f;
+    //angle = 0.0f;
     m_sObjFilename = sOBJFile;
     m_sTexFilename = sImgFile;
     _add3DObjReload(this);
+	wireframe = false;
 }
 
 Object3D::Object3D()
 {
   m_obj = m_tex = 0;
-  pos.x = pos.y = pos.z = 0.0f;
-  rot.x = rot.y = rot.z = 0.0f;
-  scale.x = scale.y = scale.z = 1.0f;
-  angle = 0.0f;
-  _add3DObjReload(this);  
+  //pos.x = pos.y = pos.z = 0.0f;
+  //rot.x = rot.y = rot.z = 0.0f;
+  //scale.x = scale.y = scale.z = 1.0f;
+  //angle = 0.0f;
+  _add3DObjReload(this);
+  wireframe = false;
 }
 
 Object3D::~Object3D()
@@ -407,16 +409,17 @@ void Object3D::setTexture(string sFilename)
 
 void Object3D::render()
 {
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  //TODO For Wireframe Games logo. Woot woot!
-	glEnable(GL_LIGHTING);
-    glPushMatrix();
-    glTranslatef(pos.x, pos.y, pos.z);
-    glRotatef(angle, rot.x, rot.y, rot.z);
-    glScalef(scale.x, scale.y, scale.z);
+	if(wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPushMatrix();
+    //glTranslatef(pos.x, pos.y, pos.z);
+    //glRotatef(angle, rot.x, rot.y, rot.z);
+    //glScalef(scale.x, scale.y, scale.z);
     glBindTexture(GL_TEXTURE_2D, m_tex);
     glCallList(m_obj);
-    glPopMatrix();
-	glDisable(GL_LIGHTING);	//TODO: Enable/disable someplace else that makes more sense
+    //glPopMatrix();
+	if(wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	//Reset to drawing full faces
 }
 
 void Object3D::_reload()

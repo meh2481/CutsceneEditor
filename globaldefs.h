@@ -89,6 +89,8 @@ Point pointFromString(string s);    //Get a point from comma-separated values in
 DWORD colorFromString(string s);    //Get a color from comma-separated values in a string
 int32_t randInt(int32_t min, int32_t max);  //Get a random integer
 float32 randFloat(float32 min, float32 max);        //Get a random float32
+float32 distanceSquared(Vec3 vec1, Vec3 vec2);		//Get the distance between two vectors squared
+float32 distance(Vec3 vec1, Vec3 vec2);				//Get the distance between two vectors (slower than above)
 #ifdef __APPLE__
 //returns the closest power of two value larger than given value. Because textures.
 int power_of_two(int input);

@@ -139,6 +139,19 @@ Vec3 rotateAroundVector(Vec3 vecToRot, Vec3 rotVec, float32 fAngle)
     return result;
 }
 
+float32 distanceSquared(Vec3 vec1, Vec3 vec2)
+{
+	Vec3 diff;
+	diff.x = vec1.x - vec2.x;
+	diff.y = vec1.y - vec2.y;
+	diff.z = vec1.z - vec2.z;
+	return (diff.x*diff.x + diff.y*diff.y + diff.z*diff.z);
+}
+
+float32 distance(Vec3 vec1, Vec3 vec2)
+{
+	return sqrt(distanceSquared(vec1, vec2));
+}
 
 #ifdef __APPLE__
 //returns the closest power of two value

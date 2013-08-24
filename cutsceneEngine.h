@@ -16,6 +16,7 @@ private:
   Vec3 CameraPos;
   list<obj*>::iterator m_CurSelectedActor;
   Color selectionPulse;
+  Object3D* m_centerDraw;	//For drawing objects' centers
 
 protected:
     void frame();
@@ -32,6 +33,7 @@ public:
     //Program-specific functions
     void loadActors(string sFolderPath);
     void drawActors();
+	list<obj*>::iterator findClosestObject(Vec3 pos);	//Find object closest to given point
 };
 
 void signalHandler(string sSignal); //Stub function for handling signals that come in from our HUD, and passing them on to myEngine

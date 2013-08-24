@@ -8,6 +8,8 @@
 #include "Image.h"
 #include "globaldefs.h"
 
+#define NO_TEXTURE ""	//Invalid image
+
 class Vertex
 {
 public:
@@ -36,10 +38,11 @@ protected:
     string m_sTexFilename;
 
 public:
-    Vertex pos;
-    Vertex rot;
-    Vertex scale;
-    float32 angle;  //The angle we'll be rotating
+    //Vertex pos;
+    //Vertex rot;
+    //Vertex scale;
+    //float32 angle;  //REDUNDANT
+	bool wireframe;	//If we're drawing in wireframe mode or not
     
     void _reload();  //Reload memory associated with this object
 
