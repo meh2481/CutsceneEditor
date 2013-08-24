@@ -44,6 +44,9 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 	showCursor();
 	m_centerDraw = new Object3D("res/selectball.tiny3d", NO_TEXTURE);
 	m_centerDraw->wireframe = true;
+	
+	m_bDragPos = m_bDragRot = false;
+	m_bConstrainX = m_bConstrainY = false;
 }
 
 CutsceneEngine::~CutsceneEngine()
@@ -135,20 +138,48 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					{
 						save("res/editor.cutscene");
 					}
-					
-				/*case SDLK_EQUALS:
-					if(m_CurSelectedActor == m_lActors.end())
-						m_CurSelectedActor = m_lActors.begin();
-					else
-						m_CurSelectedActor++;
 					break;
-				
-				case SDLK_MINUS:
-					if(m_CurSelectedActor == m_lActors.begin())
-						m_CurSelectedActor = m_lActors.end();
-					else
-						m_CurSelectedActor--;
-					break;*/              
+					
+				case SDLK_DELETE:	//Erase objects
+					if(m_CurSelectedActor != m_lActors.end())
+					{
+						delete (*m_CurSelectedActor);
+						m_lActors.erase(m_CurSelectedActor);
+					}
+					m_CurSelectedActor = m_lActors.end();
+					break;
+					
+				case SDLK_x: //Constrain to only move along X axis
+					if(m_CurSelectedActor != m_lActors.end() && m_bDragPos)
+					{
+						m_bConstrainX = !m_bConstrainX;
+						if(m_bConstrainX)	//Snap Y back to 0 difference
+						{
+							(*m_CurSelectedActor)->pos.y = m_ptOldPos.y;
+						}
+						else	//Snap Y to where it would have been
+						{
+							Point cursorpos = getCursorPos();
+							(*m_CurSelectedActor)->pos.y = (cursorpos.y - getHeight()/2.0) / 180.0;
+						}
+					}
+					break;
+					
+				case SDLK_y: //Constrain to only move along Y axis
+					if(m_CurSelectedActor != m_lActors.end() && m_bDragPos)
+					{
+						m_bConstrainY = !m_bConstrainY;
+						if(m_bConstrainY)	//Snap X back to 0 difference
+						{
+							(*m_CurSelectedActor)->pos.x = m_ptOldPos.x;
+						}
+						else	//Snap X to where it would have been
+						{
+							Point cursorpos = getCursorPos();
+							(*m_CurSelectedActor)->pos.x = (cursorpos.x - getWidth()/2.0) / 180.0;
+						}
+					}
+					break;
               }
             break;
 
@@ -160,38 +191,70 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             }
             break;
 		
-		/*case SDL_MOUSEBUTTONDOWN:
-            if(event.button.button == SDL_BUTTON_LEFT)
+		case SDL_MOUSEBUTTONDOWN:
+            if(event.button.button == SDL_BUTTON_LEFT)	//Left mouse button: Drag
             {
-				isMouseDown = true;
+				if(m_CurSelectedActor != m_lActors.end())
+				{
+					if(m_bDragRot)
+					{
+						m_bDragRot = false;
+						(*m_CurSelectedActor)->rot = m_fOldRot;
+					}
+					else	//Start dragging
+					{
+						m_ptOldPos = (*m_CurSelectedActor)->pos;
+						m_bDragPos = true;
+					}
+				}
             }
-			//RMB zooms in/out
-            else if(event.button.button == SDL_BUTTON_RIGHT)
+            else if(event.button.button == SDL_BUTTON_RIGHT)	//Right mouse button: Rotate
             {
+				if(m_CurSelectedActor != m_lActors.end())
+				{
+					if(m_bDragPos)
+					{
+						m_bDragPos = false;
+						(*m_CurSelectedActor)->pos = m_ptOldPos;
+					}
+					else	//Start rotating
+					{
+						m_fOldRot = (*m_CurSelectedActor)->rot;
+						m_bDragRot = true;
+					}
+				}
             }
             break;
 
         case SDL_MOUSEBUTTONUP:
             if(event.button.button == SDL_BUTTON_LEFT)
             {
-				isMouseDown = false;
+				m_bConstrainX = m_bConstrainY = false;
+				if(m_bDragPos)
+					m_bDragPos = false;
             }
-            break;*/
+			else if(event.button.button == SDL_BUTTON_RIGHT)
+			{
+				if(m_bDragRot)
+					m_bDragRot = false;
+			}
+            break;
 
         case SDL_MOUSEMOTION:
-            if(getCursorDown(LMB) && m_CurSelectedActor != m_lActors.end())
+            if(m_bDragPos && m_CurSelectedActor != m_lActors.end())
             {
-				(*m_CurSelectedActor)->pos.x += event.motion.xrel/(180.0);
-				(*m_CurSelectedActor)->pos.y += event.motion.yrel/(180.0);
+				if(!m_bConstrainY)
+					(*m_CurSelectedActor)->pos.x += event.motion.xrel/(180.0);
+				if(!m_bConstrainX)
+					(*m_CurSelectedActor)->pos.y += event.motion.yrel/(180.0);
             }
-            else if(getCursorDown(RMB) && m_CurSelectedActor != m_lActors.end())
+            else if(m_bDragRot && m_CurSelectedActor != m_lActors.end())
             {
 				(*m_CurSelectedActor)->rot += event.motion.xrel/170.0;
             }
 			else //No button down; choose object to select
 			{
 				Vec3 pos;
-				Point cursorpos = getCursorPos();
 				pos.x = event.motion.x - getWidth()/2.0;
 				pos.y = event.motion.y - getHeight()/2.0;
 				pos.z = 0;
@@ -301,6 +364,9 @@ list<obj*>::iterator CutsceneEngine::findClosestObject(Vec3 pos)
 			ret = i;
 		}
 	}
+	
+	if(closestPos > SELECT_MIN_DISTANCE)	//If no object is close enough, ignore
+		return m_lActors.end();
 	return ret;
 }
 

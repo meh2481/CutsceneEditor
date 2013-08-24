@@ -143,7 +143,8 @@ Image::~Image()
 {
     //image cleanup
     errlog << "Freeing image \"" << m_sFilename << "\"" << endl;
-    glDeleteTextures(1, &m_hTex);
+	if(m_hTex)
+		glDeleteTextures(1, &m_hTex);	//Free OpenGL graphics memory
     _removeImgReload(this);
 }
 

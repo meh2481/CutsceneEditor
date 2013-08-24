@@ -8,6 +8,8 @@
 #include "Engine.h"
 #include <vector>
 
+#define SELECT_MIN_DISTANCE	0.3
+
 class CutsceneEngine : public Engine
 {
 private:
@@ -17,6 +19,14 @@ private:
   list<obj*>::iterator m_CurSelectedActor;
   Color selectionPulse;
   Object3D* m_centerDraw;	//For drawing objects' centers
+  
+  //Editing helpers
+  Point m_ptOldPos;
+  float32 m_fOldRot;
+  bool m_bDragPos;
+  bool m_bDragRot;
+  bool m_bConstrainX;
+  bool m_bConstrainY;
 
 protected:
     void frame();

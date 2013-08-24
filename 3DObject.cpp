@@ -43,7 +43,12 @@ Object3D::Object3D()
 
 Object3D::~Object3D()
 {
-  _remove3DObjReload(this);
+	_remove3DObjReload(this);
+	//Free OpenGL graphics memory
+	if(m_obj)
+		glDeleteLists(m_obj, 1);
+	if(m_tex)
+		glDeleteTextures(1, &m_tex);
 }
 
 void Object3D::fromOBJFile(string sFilename)
