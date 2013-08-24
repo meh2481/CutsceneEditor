@@ -139,7 +139,7 @@ void Engine::clearImages()
 void Engine::start()
 {
     // Load all that we need to
-    init();
+    init(lCommandLine);
     // Let's rock now!
     while(!_frame());
 }
@@ -376,7 +376,7 @@ void Engine::setup_opengl()
 	
 	//Set up lighting
     glShadeModel(GL_SMOOTH);
-    //glEnable( GL_LIGHT0 );
+    glEnable( GL_LIGHT0 );
     glEnable( GL_LIGHT1 );
     glEnable( GL_COLOR_MATERIAL );
 
@@ -515,7 +515,32 @@ bool Engine::getCursorDown(int iButtonCode)
 	return false;
 }
 
-
+void Engine::commandline(int argc, char** argv)
+{
+	//Step through intelligently
+	for(int i = 1; i < argc; i++)
+	{
+		commandlineArg cla;
+		string sSwitch = argv[i];
+		if(sSwitch.find('-') == 0)
+		{
+			if(sSwitch.find("--") == 0)
+				sSwitch.erase(0,1);
+			sSwitch.erase(0,1);
+			
+			cla.sSwitch = sSwitch;
+			if(i+1 < argc)	//Switch with a value
+			{
+				i++;
+				cla.sValue = argv[i];
+			}
+			
+		}
+		else	//No switch for this value
+			cla.sValue = sSwitch;
+		lCommandLine.push_back(cla);
+	}
+}
 
 
 

@@ -27,16 +27,16 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 	CameraPos.z = -4;
 	m_CurSelectedActor = m_lActors.end();
 	selectionPulse.r = 1.0f;
-	selectionPulse.g = selectionPulse.b = 0.0f;
+	selectionPulse.g = selectionPulse.b = 0.2f;
 	Interpolate* inter = new Interpolate(&(selectionPulse.g));
-    inter->setMinVal(0.0f, false);
-    inter->setMaxVal(1.0f, false);
-    inter->calculateIncrement(1.0f, 1.0f);
+    inter->setMinVal(0.2f, false);
+    inter->setMaxVal(0.4f, false);
+    inter->calculateIncrement(0.4f, 0.5f);
     addInterpolation(inter);
 	inter = new Interpolate(&(selectionPulse.b));
-    inter->setMinVal(0.0f, false);
-    inter->setMaxVal(1.0f, false);
-    inter->calculateIncrement(1.0f, 1.0f);
+    inter->setMinVal(0.2f, false);
+    inter->setMaxVal(0.4f, false);
+    inter->calculateIncrement(0.4f, 0.5f);
     addInterpolation(inter);
 	showCursor();
 }
@@ -58,23 +58,39 @@ void CutsceneEngine::draw()
 	glLoadIdentity();
 	glTranslatef(CameraPos.x, CameraPos.y, CameraPos.z);
 	glRotatef(90.0f,1.0f,0.0f,0.0f);
-  drawActors();
+	drawActors();
   
-  glLoadIdentity();
-  glDisable(GL_LIGHTING);
-  Rect m_rcViewScreen;
-  m_rcViewScreen.set(0,0,getWidth()/2,getHeight()/2);
-  fillRect(m_rcViewScreen, 255, 0, 0, 100);
-  m_rcViewScreen.offset(0,getHeight()/2);
-  fillRect(m_rcViewScreen, 0, 255, 0, 100);
-  m_rcViewScreen.offset(getWidth()/2,0);
-  fillRect(m_rcViewScreen, 0, 0, 255, 100);
+	//GFX hello world stuff
+	/*glLoadIdentity();
+	glTranslatef( 0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
+	glDisable(GL_LIGHTING);
+	Rect m_rcViewScreen;
+	m_rcViewScreen.set(0,0,getWidth()/2,getHeight()/2);
+	fillRect(m_rcViewScreen, 255, 0, 0, 100);
+	m_rcViewScreen.offset(0,getHeight()/2);
+	fillRect(m_rcViewScreen, 0, 255, 0, 100);
+	m_rcViewScreen.offset(getWidth()/2,0);
+	fillRect(m_rcViewScreen, 0, 0, 255, 100);*/
         
 }
 
-void CutsceneEngine::init()
+void CutsceneEngine::init(list<commandlineArg> sArgs)
 {
-  loadActors("./segments/");
+	//Run through list for arguments we recognize
+	for(list<commandlineArg>::iterator i = sArgs.begin(); i != sArgs.end(); i++)
+	{
+		errlog << "Commandline argument. Switch: " << i->sSwitch << ", value: " << i->sValue << endl;
+		if(!(i->sSwitch.size()))	//No switch; treat as folder or something
+			loadActors(i->sValue);
+		else
+		{
+			if(i->sSwitch == "d" ||
+			   i->sSwitch == "dir")
+			{
+				loadActors(i->sValue);
+			}
+		}
+	}
 }
 
 
@@ -115,8 +131,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 						m_CurSelectedActor = m_lActors.end();
 					else
 						m_CurSelectedActor--;
-					break;
-                    
+					break;                    
               }
             break;
 
@@ -167,15 +182,24 @@ void CutsceneEngine::loadActors(string sFolderPath)
 	ttvfs::GetFileListRecursive(sFolderPath, lFiles);
 	for(ttvfs::StringList::iterator i = lFiles.begin(); i != lFiles.end(); i++)
 	{
-		//if((*i).find(".obj", (*i).size() - 4) != string::npos)
+		//Support .tiny3d files as well as .obj, because why not
+		bool bIs3D = false;
+		string sPNG = *i;
 		if((*i).find(".tiny3d", (*i).size() - 7) != string::npos)
 		{
 			//Use PNG with this filename as texture
-			string sPNG = *i;
-			//sPNG.replace((*i).size() - 4, 4, ".png");
 			sPNG.erase((*i).size() - 7);
 			sPNG.append(".png");
-			//cout << "Obj file: " << *i << endl << "image: " << sPNG << endl << endl;
+			bIs3D = true;
+		}
+		else if((*i).find(".obj", (*i).size() - 4) != string::npos)
+		{
+			sPNG.replace((*i).size() - 4, 4, ".png");
+			bIs3D = true;
+		}
+		
+		if(bIs3D)
+		{
 			Object3D* o3d = new Object3D((*i), sPNG);
 			obj* o = new obj();
 			physSegment* seg = new physSegment();

@@ -25,11 +25,17 @@ struct resolution
   int h;
 } ;
 
+typedef struct
+{
+	string sSwitch, sValue;
+} commandlineArg;
+
 class Engine
 {
 private:
     //Variables for use by the engine
 //    HGE* m_hge;
+	list<commandlineArg> lCommandLine;
     b2World* m_physicsWorld;
     Point m_ptCursorPos;
     bool  m_bShowCursor;
@@ -69,7 +75,7 @@ protected:
     //Classes to override in your own class definition
     virtual void frame() = 0;   //Function that's called every frame
     virtual void draw() = 0;    //Actual function that draws stuff
-    virtual void init() = 0;    //So we can load all our images and such
+    virtual void init(list<commandlineArg> sArgs) = 0;    //So we can load all our images and such
     virtual void handleEvent(SDL_Event event) = 0;  //Function that's called for each SDL input event
 
 public:
@@ -78,6 +84,7 @@ public:
     ~Engine();
 
     //Methods
+	void commandline(int argc, char** argv);	//Pass along commandline arguments for the engine to use
     void start();   //Runs engine and doesn't exit until the engine ends
     void fillRect(Point p1, Point p2, uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha); //Fill the specified rect with the specified color
     void fillRect(float32 x1, float32 y1, float32 x2, float32 y2, uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha);

@@ -6,16 +6,9 @@
 #include "cutsceneEngine.h"
 
 #ifdef _WIN32
-#include <windows.h>
-int CALLBACK WinMain(
-  HINSTANCE hInstance,
-  HINSTANCE hPrevInstance,
-  LPSTR lpCmdLine,
-  int nCmdShow
-)
-#else
-int main(int argc, char *argv[])
+#undef main
 #endif
+int main(int argc, char *argv[])
 {
     errlog << "Starting program" << endl;
 #ifdef __APPLE__
@@ -25,6 +18,7 @@ int main(int argc, char *argv[])
     CutsceneEngine* eng = new CutsceneEngine(800, 600, "Cutscene Editor"); //Create our engine
 
     eng->setFramerate(60);
+	eng->commandline(argc, argv);
     eng->start(); //Get the engine rolling
 	errlog << "Deleting engine" << endl;
     delete eng;

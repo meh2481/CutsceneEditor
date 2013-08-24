@@ -20,7 +20,7 @@ private:
 protected:
     void frame();
     void draw();
-    void init();
+    void init(list<commandlineArg> sArgs);
     void handleEvent(SDL_Event event);
 
 public:
