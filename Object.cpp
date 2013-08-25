@@ -14,6 +14,8 @@ obj::obj()
   rot = 0.0f;
   usr = NULL;
   parent = NULL;
+  bIsChild = false;
+  parent = NULL;
 }
 
 obj::~obj()
@@ -22,8 +24,10 @@ obj::~obj()
         delete (*i);
 }
 
-void obj::draw()
+void obj::draw(bool bChildDraw)
 {
+	if(bIsChild && !bChildDraw)
+		return;
 	glPushMatrix();
 	glTranslatef(pos.x, 0.0f, pos.y);	//X and Y are messed up for us. Ah, well
 	glRotatef(rot*RAD2DEG, 0.0f, 1.0f, 0.0f);
@@ -32,7 +36,7 @@ void obj::draw()
         (*i)->draw();
 	//Draw children of this object translated/rotated
 	for(list<obj*>::iterator i = children.begin(); i != children.end(); i++)
-		(*i)->draw();
+		(*i)->draw(true);
 	glPopMatrix();
 }
 
@@ -41,11 +45,34 @@ void obj::addSegment(physSegment* seg)
     segments.push_back(seg);
 }
 
-void obj::addChild(obj* object)
+void obj::addChild(obj* object, bool bOffset)
 {
-  children.push_back(object);
+	if(object->bIsChild)
+		return;	//Don't make this a child if it already is
+	object->bIsChild = true;
+	object->parent = this;
+	if(bOffset)
+	{
+		for(obj* o = this; o != NULL; o = o->parent)
+		{
+			object->pos.x -= o->pos.x;
+			object->pos.y -= o->pos.y;	//Keep same position as before by factoring in parent locations
+		}
+	}
+	//TODO: Take rotation into account
+	children.push_back(object);
 }
 
+Point obj::getPos()
+{
+	Point p = pos;
+	for(obj* o = parent; o != NULL; o = o->parent)
+	{
+		p.x += o->pos.x;
+		p.y += o->pos.y;	//Keep same position as before by factoring in parent locations
+	}
+	return p;	//TODO: Factor in rotation
+}
 
 //----------------------------------------------------------------------------------------------------
 // physSegment class

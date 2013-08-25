@@ -17,7 +17,9 @@ private:
   ttvfs::VFSHelper vfs;
   Vec3 CameraPos;
   list<obj*>::iterator m_CurSelectedActor;
+  list<obj*>::iterator m_CurSelectedParent;
   Color selectionPulse;
+  Color parentPulse;
   Object3D* m_centerDraw;	//For drawing objects' centers
   
   //Editing helpers

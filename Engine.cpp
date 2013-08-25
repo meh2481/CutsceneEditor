@@ -79,6 +79,7 @@ void Engine::_render()
 
 Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 {
+	m_sTitle = sTitle;
     b2Vec2 gravity(0.0, 9.8);  //Vector for our world's gravity
     m_physicsWorld = new b2World(gravity);
     m_ptCursorPos.SetZero();
@@ -293,7 +294,7 @@ void Engine::setup_sdl()
 #else
   image = IMG_Load("res/icon.png");
 #endif
-  SDL_WM_SetCaption("Heartlight++", NULL);
+  SDL_WM_SetCaption(m_sTitle.c_str(), NULL);
   SDL_WM_SetIcon(image, NULL);
   SDL_FreeSurface(image);
 

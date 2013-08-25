@@ -38,6 +38,8 @@ public:
 class obj
 {
 public:
+	bool bIsChild;	//If this is a child of another object
+	
     list<physSegment*> segments;
     list<obj*> children;
     
@@ -49,9 +51,10 @@ public:
     void* usr;
     obj* parent;
 
-    void draw();
+    void draw(bool bChildDraw = false);
     void addSegment(physSegment* seg);
-    void addChild(obj* object);
+    void addChild(obj* object, bool bOffset = true);	//bOffset = factor in location of this object and calculate offset
+	Point getPos();	//Get position with parents' positions factored in
     
 
 };

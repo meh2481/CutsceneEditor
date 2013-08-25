@@ -35,6 +35,7 @@ class Engine
 private:
     //Variables for use by the engine
 //    HGE* m_hge;
+	string m_sTitle;
 	list<commandlineArg> lCommandLine;
     b2World* m_physicsWorld;
     Point m_ptCursorPos;

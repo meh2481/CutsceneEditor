@@ -28,6 +28,8 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 	vfs.Prepare();
 	CameraPos.x = CameraPos.y = 0;
 	CameraPos.z = -4;
+	
+	//Set up selection variables
 	m_CurSelectedActor = m_lActors.end();
 	selectionPulse.r = 1.0f;
 	selectionPulse.g = selectionPulse.b = 0.2f;
@@ -41,6 +43,22 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
     inter->setMaxVal(0.4f, false);
     inter->calculateIncrement(0.4f, 0.5f);
     addInterpolation(inter);
+	
+	//Set up parenting variables
+	m_CurSelectedParent = m_lActors.end();
+	parentPulse.b = 1.0f;
+	parentPulse.g = parentPulse.r = 0.2f;
+	inter = new Interpolate(&(parentPulse.g));
+    inter->setMinVal(0.2f, false);
+    inter->setMaxVal(0.4f, false);
+    inter->calculateIncrement(0.4f, 0.5f);
+    addInterpolation(inter);
+	inter = new Interpolate(&(parentPulse.r));
+    inter->setMinVal(0.2f, false);
+    inter->setMaxVal(0.4f, false);
+    inter->calculateIncrement(0.4f, 0.5f);
+    addInterpolation(inter);
+	
 	showCursor();
 	m_centerDraw = new Object3D("res/selectball.tiny3d", NO_TEXTURE);
 	m_centerDraw->wireframe = true;
@@ -147,6 +165,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 						m_lActors.erase(m_CurSelectedActor);
 					}
 					m_CurSelectedActor = m_lActors.end();
+					m_CurSelectedParent = m_lActors.end();
 					break;
 					
 				case SDLK_x: //Constrain to only move along X axis
@@ -160,7 +179,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 						else	//Snap Y to where it would have been
 						{
 							Point cursorpos = getCursorPos();
-							(*m_CurSelectedActor)->pos.y = (cursorpos.y - getHeight()/2.0) / 180.0;
+							(*m_CurSelectedActor)->pos.y = (*m_CurSelectedActor)->getPos().y - (*m_CurSelectedActor)->pos.y + (cursorpos.y - getHeight()/2.0) / 180.0;
 						}
 					}
 					break;
@@ -176,10 +195,30 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 						else	//Snap X to where it would have been
 						{
 							Point cursorpos = getCursorPos();
-							(*m_CurSelectedActor)->pos.x = (cursorpos.x - getWidth()/2.0) / 180.0;
+							(*m_CurSelectedActor)->pos.x = (*m_CurSelectedActor)->getPos().x - (*m_CurSelectedActor)->pos.x + (cursorpos.x - getWidth()/2.0) / 180.0;
 						}
 					}
 					break;
+				
+				case SDLK_p:	//Parent objects to other objects
+					if(keyDown(SDLK_LCTRL) || keyDown(SDLK_RCTRL))	
+					{
+						//Parent
+						if(m_CurSelectedParent != m_lActors.end() && m_CurSelectedActor != m_lActors.end() && m_CurSelectedParent != m_CurSelectedActor)
+						{
+							(*m_CurSelectedParent)->addChild(*m_CurSelectedActor);	//This automatically tests for duplication
+						}
+					}
+					else	//Set to be parent
+					{
+						if(m_CurSelectedParent == m_CurSelectedActor)
+							m_CurSelectedParent = m_lActors.end();
+						else
+							m_CurSelectedParent = m_CurSelectedActor;
+					}
+					break;
+					
+					
               }
             break;
 
@@ -307,16 +346,20 @@ void CutsceneEngine::drawActors()
 	glEnable(GL_LIGHTING);
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
-		if(i == m_CurSelectedActor)	//Selected actor pulses red
+		if(i == m_CurSelectedParent)
+			glColor4f(parentPulse.r, parentPulse.g, parentPulse.b, parentPulse.a);
+		else if(i == m_CurSelectedActor)	//Selected actor pulses red
 			glColor4f(selectionPulse.r, selectionPulse.g, selectionPulse.b, selectionPulse.a);
 		(*i)->draw();
 		//Draw center
 		glPushMatrix();
-		if(i == m_CurSelectedActor)
+		if(i == m_CurSelectedParent)
+			glColor4f(0.0,0.0,1.0,1.0);	//Center of parent is drawn blue
+		else if(i == m_CurSelectedActor)
 			glColor4f(1.0,0.0,0.0,1.0);	//Center of current actor is drawn red
 		else
 			glColor4f(0.0,1.0,0.0,1.0);
-		glTranslatef((*i)->pos.x, 0.0f, (*i)->pos.y);
+		glTranslatef((*i)->getPos().x, 0.0f, (*i)->getPos().y);
 		glRotatef((*i)->rot*RAD2DEG, 0.0f, 1.0f, 0.0f);
 		glScalef(0.07f, 0.07f, 0.07f);
 		glDisable(GL_LIGHTING);
@@ -353,8 +396,8 @@ list<obj*>::iterator CutsceneEngine::findClosestObject(Vec3 pos)
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
 		Vec3 objPos;
-		objPos.x = (*i)->pos.x;
-		objPos.y = (*i)->pos.y;
+		objPos.x = (*i)->getPos().x;
+		objPos.y = (*i)->getPos().y;
 		objPos.z = 0.0f;
 		
 		float32 dist = distanceSquared(objPos, pos);
@@ -379,7 +422,8 @@ void CutsceneEngine::save(string sFilename)
 	//Write actors
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
-		writeObject(*i, root, doc);
+		if(!((*i)->bIsChild))	//Only write toplevel if not a child of another actor
+			writeObject(*i, root, doc);
 	}
 	
 	
@@ -466,7 +510,9 @@ void CutsceneEngine::writeObject(obj* object, XMLElement* parent, XMLDocument* d
 	
 	//Write children
 	for(list<obj*>::iterator i = object->children.begin(); i != object->children.end(); i++)
+	{
 		writeObject(*i, actor, doc);	//Recursive call
+	}
 		
 	parent->InsertEndChild(actor);
 }
@@ -508,7 +554,7 @@ void CutsceneEngine::readObject(obj* object, XMLElement* actor)
 		obj* object2 = new obj();
 		readObject(object2, actor2);	//Recursive call for child objects
 		m_lActors.push_back(object2);
-		object->addChild(object2);
+		object->addChild(object2, false);
 	}
 }
 
