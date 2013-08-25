@@ -68,10 +68,14 @@ Point obj::getPos()
 	Point p = pos;
 	for(obj* o = parent; o != NULL; o = o->parent)
 	{
-		p.x += o->pos.x;
-		p.y += o->pos.y;	//Keep same position as before by factoring in parent locations
+		//Factor rotation of parents into finding out where this is in world space
+		float32 xnew = p.x * cos(o->rot) + p.y * sin(o->rot);	//Reverse a standard Cartesian Coordinate transform, since -y is up
+		float32 ynew = -p.x * sin(o->rot) + p.y * cos(o->rot);
+		
+		p.x = xnew + o->pos.x;
+		p.y = ynew + o->pos.y;	//Keep same position as before by factoring in parent locations
 	}
-	return p;	//TODO: Factor in rotation
+	return p;
 }
 
 //----------------------------------------------------------------------------------------------------
