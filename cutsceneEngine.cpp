@@ -310,7 +310,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 void CutsceneEngine::loadActors(string sFolderPath)
 {
 	ttvfs::StringList lFiles;
-	ttvfs::GetFileListRecursive(sFolderPath, lFiles);
+	ttvfs::GetFileList(sFolderPath.c_str(), lFiles);
 	for(ttvfs::StringList::iterator i = lFiles.begin(); i != lFiles.end(); i++)
 	{
 		//Support .tiny3d files as well as .obj, because why not
@@ -331,7 +331,9 @@ void CutsceneEngine::loadActors(string sFolderPath)
 		
 		if(bIs3D)
 		{
-			Object3D* o3d = new Object3D((*i), sPNG);
+			string sObj = sFolderPath + *i;	//Append folder path to file to load
+			sPNG = sFolderPath + sPNG;
+			Object3D* o3d = new Object3D(sObj, sPNG);
 			obj* o = new obj();
 			physSegment* seg = new physSegment();
 			seg->obj3D = o3d;
