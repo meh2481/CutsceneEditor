@@ -29,11 +29,13 @@ protected:
     void (*m_signalHandler)(string);    //Function for handling signals this class creates
 
 public:
+	Color col;
+
     HUDItem(string sName);
     ~HUDItem();
 
     virtual void    event(SDL_Event event);                         //For handling input events as they come in
-    virtual void    draw(float32 fCurTime, DWORD dwCol = 0xFFFFFFFF);   //For drawing to the screen
+    virtual void    draw(float32 fCurTime);//, DWORD dwCol = 0xFFFFFFFF);   //For drawing to the screen
     void            addChild(HUDItem* hiChild);                         //Add this child to this HUDItem
     HUDItem*        getChild(string sName);                             //Get the first child that has this name (return NULL if none)
 
@@ -60,7 +62,7 @@ public:
     HUDImage(string sName);
     ~HUDImage();
 
-    void draw(float32 fCurTime, DWORD dwCol = 0xFFFFFFFF);
+    void draw(float32 fCurTime);//, DWORD dwCol = 0xFFFFFFFF);
 //    void setScale(uint16_t iScale);
 
     void    setImage(Image* img);
@@ -73,13 +75,14 @@ protected:
     Text* m_txtFont;
     string m_sValue;
     uint8_t m_iAlign;
-    DWORD m_dwFill; //for filling the background
 
 public:
+	Color fill; //for filling the background
+
     HUDTextbox(string sName);
     ~HUDTextbox();
 
-    void draw(float32 fCurTime, DWORD dwCol = 0xFFFFFFFF);
+    void draw(float32 fCurTime);//, DWORD dwCol = 0xFFFFFFFF);
 //    void setScale(uint16_t iScale);
 
     void    setFont(Text* txt)          {m_txtFont = txt;};     //Set the font used by this textbox
@@ -89,8 +92,8 @@ public:
     string  getText()                   {return m_sValue;};
     void    setAlign(uint8_t iAlign)    {m_iAlign = iAlign;};   //Set the font alignment for this textbox
     uint8_t getAlign()                  {return m_iAlign;};
-    void    setFill(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {m_dwFill = ARGB(a,r,g,b);};
-    void    setFill(DWORD dwFill)       {m_dwFill = dwFill;};
+    //void    setFill(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {m_dwFill = ARGB(a,r,g,b);};
+    //void    setFill(DWORD dwFill)       {m_dwFill = dwFill;};
 
 };
 
@@ -108,7 +111,7 @@ public:
     ~HUDToggle();
 
     void event(SDL_Event event);                        //This will create a signal if the event matches our set key
-    void draw(float32 fCurTime, DWORD dwCol = 0xFFFFFFFF);  //Draws the enabled or disabled image
+    void draw(float32 fCurTime);//, DWORD dwCol = 0xFFFFFFFF);  //Draws the enabled or disabled image
 //    void setScale(uint16_t iScale);                         //Scales the child images
 
     void setEnabled(bool bValue)        {m_bValue = bValue;};
@@ -134,7 +137,7 @@ public:
     ~HUDGroup();
 
     void event(SDL_Event event);                        //If this event matches any of our keys, set alpha to 255
-    void draw(float32 fCurTime, DWORD dwCol = 0xFFFFFFFF);  //Override draw so can draw members with low alpha and such
+    void draw(float32 fCurTime);//, DWORD dwCol = 0xFFFFFFFF);  //Override draw so can draw members with low alpha and such
 
     void    setFadeDelay(float32 fDelay)    {m_fFadeDelay = fDelay;};
     float32 getFadeDelay()                  {return m_fFadeDelay;};

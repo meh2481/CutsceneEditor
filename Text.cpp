@@ -72,6 +72,8 @@ void Text::render(string sText, float32 x, float32 y)
     if(m_imgFont == NULL)
         return;
 
+	glColor4f(col.r, col.g, col.b, col.a);
+	
     if(m_iAlign & ALIGN_LEFT)
         x -= sizeString(sText).x;
     else if(m_iAlign & ALIGN_CENTER)
@@ -100,6 +102,7 @@ void Text::render(string sText, float32 x, float32 y)
         m_imgFont->draw(x, y, rc);
         x += rc.width();
     }
+	glColor4f(1.0f,1.0f,1.0f,1.0f);
 }
 
 Point Text::sizeString(string sText)
@@ -128,7 +131,7 @@ Point Text::sizeString(string sText)
     return ptResult;
 }
 
-void Text::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+/*void Text::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     if(m_imgFont != NULL)
         m_imgFont->setColor(r,g,b,a);
@@ -138,7 +141,7 @@ void Text::setColor(DWORD dwCol)
 {
     if(m_imgFont != NULL)
         m_imgFont->setColor(dwCol);
-}
+}*/
 
 //void Text::setScale(uint16_t iScaleFac)
 //{

@@ -36,15 +36,26 @@ using namespace tinyxml2;
 
 
 //TODO Remove
-#ifndef _WIN32
-typedef uint32_t DWORD;
-#endif
-#define ARGB(a,r,g,b)	((DWORD(a)<<24) + (DWORD(r)<<16) + (DWORD(g)<<8) + DWORD(b))
-#define GETA(col)		((col)>>24)
-#define GETR(col)		(((col)>>16) & 0xFF)
-#define GETG(col)		(((col)>>8) & 0xFF)
-#define GETB(col)		((col) & 0xFF)
-#define SETA(col,a)		(((col) & 0x00FFFFFF) + (DWORD(a)<<24))
+//#ifndef _WIN32
+//typedef uint32_t DWORD;
+//#endif
+//#define ARGB(a,r,g,b)	((DWORD(a)<<24) + (DWORD(r)<<16) + (DWORD(g)<<8) + DWORD(b))
+//#define GETA(col)		((col)>>24)
+//#define GETR(col)		(((col)>>16) & 0xFF)
+//#define GETG(col)		(((col)>>8) & 0xFF)
+//#define GETB(col)		((col) & 0xFF)
+//#define SETA(col,a)		(((col) & 0x00FFFFFF) + (DWORD(a)<<24))
+
+class Color
+{
+public:
+	float32 r,g,b,a;
+	Color();
+
+	void from256(int32_t ir, int32_t ig, int32_t ib, int32_t a = 255);
+	void set(float32 fr, float32 fg, float32 fb, float32 fa = 1.0) {r=fr;g=fg;b=fb;a=fa;};
+	void clear()	{r=g=b=a=1.0f;};
+};
 
 class Rect {
 public:
@@ -86,7 +97,7 @@ Vec3 rotateAroundVector(Vec3 vecToRot, Vec3 rotVec, float32 fAngle);    //Rotate
 string stripCommas(string s);       //Strip all the commas from s, leaving spaces in their place
 Rect rectFromString(string s);      //Get a rectangle from comma-separated values in a string
 Point pointFromString(string s);    //Get a point from comma-separated values in a string
-DWORD colorFromString(string s);    //Get a color from comma-separated values in a string
+Color colorFromString(string s);    //Get a color from comma-separated values in a string
 int32_t randInt(int32_t min, int32_t max);  //Get a random integer
 float32 randFloat(float32 min, float32 max);        //Get a random float32
 float32 distanceSquared(Vec3 vec1, Vec3 vec2);		//Get the distance between two vectors squared

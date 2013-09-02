@@ -9,7 +9,6 @@
 #include "globaldefs.h"
 #include "Image.h"
 #include "3DObject.h"
-#include "SceneLayer.h"
 
 
 #define VELOCITY_ITERATIONS 8
@@ -48,6 +47,7 @@ public:
     
     Point pos;
     float32 rot;
+	Color col;
     void* usr;
     obj* parent;
 

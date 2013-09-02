@@ -12,7 +12,7 @@ static bool g_bBlurred = true;
 
 Image::Image(string sFilename)
 {
-  m_ptHotSpot.SetZero();
+  //m_ptHotSpot.SetZero();
   m_sFilename = sFilename;
   _load(sFilename);
   _addImgReload(this);
@@ -180,7 +180,7 @@ void Image::draw(Rect rcDrawPos, Rect rcImgPos)
 
     // make a rectangle
     glBegin(GL_QUADS);
-    glColor4f(m_col.r,m_col.g,m_col.b,m_col.a);	//Colorize according to how we've colorized this image
+    //glColor4f(m_col.r,m_col.g,m_col.b,m_col.a);	//Colorize according to how we've colorized this image
     // top left
     glTexCoord2f((rcImgPos.left / (float32)w), (rcImgPos.top / (float32)h));
     glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)rcDrawPos.left/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)rcDrawPos.top/(GLfloat)screenDrawHeight + 1.0, 0.0);
@@ -195,7 +195,7 @@ void Image::draw(Rect rcDrawPos, Rect rcImgPos)
     glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(rcDrawPos.right)/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)rcDrawPos.top/(GLfloat)screenDrawHeight+1.0, 0.0);
 
     //Reset color
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    //glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     glEnd();
 }
 
@@ -224,7 +224,7 @@ void Image::draw4V(Point ul, Point ur, Point bl, Point br)
 #endif
   // make a rectangle
   glBegin(GL_QUADS);
-  glColor4f(m_col.r,m_col.g,m_col.b,m_col.a);	//Colorize according to how we've colorized this image
+  //glColor4f(m_col.r,m_col.g,m_col.b,m_col.a);	//Colorize according to how we've colorized this image
   // top left
   glTexCoord2f(0.0f, 0.0f);
   glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)ul.x/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)ul.y/(GLfloat)screenDrawHeight + 1.0, 0.0);
@@ -239,7 +239,7 @@ void Image::draw4V(Point ul, Point ur, Point bl, Point br)
   glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(ur.x)/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)ur.y/(GLfloat)screenDrawHeight+1.0, 0.0);
   
   //Reset color
-  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+  //glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
   glEnd();
   
 }
@@ -282,7 +282,7 @@ void Image::drawCentered(float32 x, float32 y, Rect rcImgPos, float32 rotation, 
     Rect rcDrawPos;
     rcDrawPos.set(0, 0, rcImgPos.width(), rcImgPos.height());
     rcDrawPos.scale(stretchFactorx,stretchFactory);
-    rcDrawPos.offset(-rcDrawPos.width()/2.0 + (float32)screenDrawWidth/2.0 - m_ptHotSpot.x, -rcDrawPos.height()/2.0 + (float32)screenDrawHeight/2.0 - m_ptHotSpot.y);
+    rcDrawPos.offset(-rcDrawPos.width()/2.0 + (float32)screenDrawWidth/2.0, -rcDrawPos.height()/2.0 + (float32)screenDrawHeight/2.0);
     //glLoadIdentity( );
     glPushMatrix();
     glTranslatef( (2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(x)/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)(y)/(GLfloat)screenDrawHeight + 1.0, 0.0);//MAGIC_ZOOM_NUMBER);
@@ -304,27 +304,14 @@ void Image::drawCentered(Point pt, Rect rcImgPos, float32 rotation, float32 stre
 }
 
 //Set the color of this image
-void Image::setColor(DWORD dwCol)
+/*void Image::setColor(DWORD dwCol)
 {
     m_col.from256((dwCol & 0xFF0000) >> 16, (dwCol & 0xFF00) >> 8, dwCol & 0xFF, (dwCol & 0xFF000000) >> 24);
-}
+}*/
 
 void Image::_reload()
 {
   _load(m_sFilename);
-}
-
-Color::Color()
-{
-    r = g = b = a = 1.0;
-}
-
-void Color::from256(int ir, int ig, int ib, int ia)
-{
-	r = (float32)ir/255.0;
-	g = (float32)ig/255.0;
-	b = (float32)ib/255.0;
-	a = (float32)ia/255.0;
 }
 
 static set<Image*> sg_images;

@@ -14,16 +14,6 @@
 //TODO: Figure out what causes this and calculate mathematically? Or just live with it?
 #define MAGIC_ZOOM_NUMBER -2.414213562373095
 
-class Color
-{
-public:
-	float32 r,g,b,a;
-	Color();
-
-	void from256(int32_t ir, int32_t ig, int32_t ib, int32_t a = 255);
-	void set(float32 fr, float32 fg, float32 fb, float32 fa = 1.0) {r=fr;g=fg;b=fb;a=fa;};
-};
-
 class Image
 {
 private:
@@ -31,7 +21,7 @@ private:
 
     GLuint   m_hTex;
 //    hgeSprite* m_hSprite;
-    Point m_ptHotSpot;
+    //Point m_ptHotSpot;
     string     m_sFilename;
     uint32_t m_iWidth, m_iHeight;
 #ifdef __APPLE__
@@ -43,7 +33,7 @@ private:
     void _load(string sFilename);
 
 public:
-    Color m_col;
+    //Color m_col;
     
     //Constructor/destructor
     Image(string sFilename);
@@ -73,15 +63,15 @@ public:
     void drawCentered(float32 x, float32 y, Rect rcImgPos, float32 rotation = 0.0, float32 stretchFactorx = 1.0, float32 stretchFactory = 1.0);    //Center part of the image at x,y
     void drawCentered(Point pt, Rect rcImgPos, float32 rotation = 0.0, float32 stretchFactorx = 1.0, float32 stretchFactory = 1.0);    //Center part of the image at pt
 
-    void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {m_col.from256(r,g,b,a);};  //Set the image to this color
-    void setColor(DWORD dwCol);
-    void setColor(Color col)    {m_col = col;};
-    Color getColor()            {return m_col;};
+    //void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {m_col.from256(r,g,b,a);};  //Set the image to this color
+    //void setColor(DWORD dwCol);
+    //void setColor(Color col)    {m_col = col;};
+    //Color getColor()            {return m_col;};
     //void setColor(float32 r, float32 g, float32 b, float32 a = 1.0) {m_col.set(r,g,b,a);};
 //    void scale(uint16_t iScaleFac); //Scales this image up by a given factor from the original, without interpolation. (scale(1) to reset to original size)
-    void setHotSpot(float32 x, float32 y)   {m_ptHotSpot.x=x;m_ptHotSpot.y=y;};
-    Point getHotSpot()                      {return m_ptHotSpot;};
-    void setHotSpot(Point pt)               {setHotSpot(pt.x, pt.y);};
+    //void setHotSpot(float32 x, float32 y)   {m_ptHotSpot.x=x;m_ptHotSpot.y=y;};
+    //Point getHotSpot()                      {return m_ptHotSpot;};
+    //void setHotSpot(Point pt)               {setHotSpot(pt.x, pt.y);};
 };
 
 //Image reloading handler functions

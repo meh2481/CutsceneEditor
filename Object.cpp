@@ -28,12 +28,14 @@ void obj::draw(bool bChildDraw)
 {
 	if(bIsChild && !bChildDraw)
 		return;
+	glColor4f(col.r,col.g,col.b,col.a);
 	glPushMatrix();
 	glTranslatef(pos.x, 0.0f, pos.y);	//X and Y are messed up for us. Ah, well
 	glRotatef(rot*RAD2DEG, 0.0f, 1.0f, 0.0f);
 	//Draw segments of this object
     for(list<physSegment*>::iterator i = segments.begin(); i != segments.end(); i++)
         (*i)->draw();
+	glColor4f(1.0f,1.0f,1.0f,1.0f);
 	//Draw children of this object translated/rotated
 	for(list<obj*>::iterator i = children.begin(); i != children.end(); i++)
 		(*i)->draw(true);

@@ -349,10 +349,11 @@ void CutsceneEngine::drawActors()
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
 		if(i == m_CurSelectedParent)
-			glColor4f(parentPulse.r, parentPulse.g, parentPulse.b, parentPulse.a);
+			(*i)->col.set(parentPulse.r, parentPulse.g, parentPulse.b, parentPulse.a);
 		else if(i == m_CurSelectedActor)	//Selected actor pulses red
-			glColor4f(selectionPulse.r, selectionPulse.g, selectionPulse.b, selectionPulse.a);
+			(*i)->col.set(selectionPulse.r, selectionPulse.g, selectionPulse.b, selectionPulse.a);
 		(*i)->draw();
+		//(*i)->col.clear();
 		//Draw center
 		glPushMatrix();
 		if(i == m_CurSelectedParent)
@@ -370,6 +371,8 @@ void CutsceneEngine::drawActors()
 		glPopMatrix();
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
 	}
+	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+		(*i)->col.clear();
 	glDisable(GL_LIGHTING);
 	
 	/* DEBUG: Draw cursor sort of thing where cursor is

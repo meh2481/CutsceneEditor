@@ -28,6 +28,8 @@ private:
     uint16_t m_iSCALE_FAC;  //Scaling factor
 
 public:
+	Color col;
+
     Text(string sXMLFilename);  //Create the font from this XML file
     ~Text();
 
@@ -38,8 +40,8 @@ public:
     //Find the size of a given string of text
     Point sizeString(string sText);
 
-    void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);  //Set the font to this color
-    void setColor(DWORD dwCol);
+    //void setColor(float32 r, float32 g, float32 b, float32 a = 1.0f);  //Set the font to this color
+    //void setColor(DWORD dwCol);
 //    void setScale(uint16_t iScaleFac);  //Scale the font up by this amount
     void setAlign(uint8_t iAlign);  //Set alignment of the text (align left = to the left of pt, align right = to the right of pt)
     string getName()    {return m_sName;};

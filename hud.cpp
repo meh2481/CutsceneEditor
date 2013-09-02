@@ -30,11 +30,11 @@ void HUDItem::event(SDL_Event event)
         (*i)->event(event);
 }
 
-void HUDItem::draw(float32 fCurTime, DWORD dwCol)
+void HUDItem::draw(float32 fCurTime)//, DWORD dwCol)
 {
     //Base class does nothing with this, except pass on
     for(list<HUDItem*>::iterator i = m_lChildren.begin(); i != m_lChildren.end(); i++)
-        (*i)->draw(fCurTime, dwCol);
+        (*i)->draw(fCurTime);
 }
 
 void HUDItem::setSignalHandler(void (*signalHandler)(string))
@@ -91,13 +91,15 @@ HUDImage::~HUDImage()
 
 }
 
-void HUDImage::draw(float32 fCurTime, DWORD dwCol)
+void HUDImage::draw(float32 fCurTime)//, DWORD dwCol)
 {
-    HUDItem::draw(fCurTime, dwCol);
+    HUDItem::draw(fCurTime);//, dwCol);
     if(m_img != NULL)
     {
-        m_img->setColor(dwCol);
+        //m_img->setColor(dwCol);
+		glColor4f(col.r,col.g,col.b,col.a);
         m_img->draw(m_ptPos.x * m_iSCALE_FAC, m_ptPos.y * m_iSCALE_FAC);
+		glColor4f(1.0f,1.0f,1.0f,1.0f);
     }
 }
 
@@ -120,20 +122,20 @@ HUDTextbox::HUDTextbox(string sName) : HUDItem(sName)
 {
     m_iAlign = ALIGN_RIGHT | ALIGN_BOTTOM;
     m_txtFont = NULL;
-    m_dwFill = 0;
+    //m_dwFill = 0;
 }
 
 HUDTextbox::~HUDTextbox()
 {
 }
 
-void HUDTextbox::draw(float32 fCurTime, DWORD dwCol)
+void HUDTextbox::draw(float32 fCurTime)//, DWORD dwCol)
 {
-    HUDItem::draw(fCurTime, dwCol);
+    HUDItem::draw(fCurTime);//, dwCol);
     if(m_txtFont == NULL) return;
 
     m_txtFont->setAlign(m_iAlign);
-    m_txtFont->setColor(dwCol);
+    m_txtFont->col = col;
 
     //Render a box around where this text will be
     Point ptSize = m_txtFont->sizeString(m_sValue);
@@ -151,7 +153,7 @@ void HUDTextbox::draw(float32 fCurTime, DWORD dwCol)
         rcText.offset(0,-rcText.height());
 
     //Fill in bg
-    fillRect(rcText, GETR(m_dwFill), GETG(m_dwFill), GETB(m_dwFill), GETA(m_dwFill));
+    fillRect(rcText, fill.r, fill.g, fill.b, fill.a);
 
     //Render the text
     m_txtFont->render(m_sValue, m_ptPos.x*m_iSCALE_FAC, m_ptPos.y*m_iSCALE_FAC);
@@ -196,24 +198,26 @@ void HUDToggle::event(SDL_Event event)
     }
 }
 
-void HUDToggle::draw(float32 fCurTime, DWORD dwCol)
+void HUDToggle::draw(float32 fCurTime)//, DWORD dwCol)
 {
-    HUDItem::draw(fCurTime, dwCol);
+    HUDItem::draw(fCurTime);//, dwCol);
 
     if(m_bValue)    //Draw enabled image
     {
         if(m_imgEnabled != NULL)
         {
-            m_imgEnabled->setColor(dwCol);
+            glColor4f(col.r,col.g,col.b,col.a);
             m_imgEnabled->draw(m_ptPos.x*m_iSCALE_FAC, m_ptPos.y*m_iSCALE_FAC);
+			glColor4f(1.0f,1.0f,1.0f,1.0f);
         }
     }
     else    //Draw disabled image
     {
         if(m_imgDisabled != NULL)
         {
-            m_imgDisabled->setColor(dwCol);
+            glColor4f(col.r,col.g,col.b,col.a);
             m_imgDisabled->draw(m_ptPos.x*m_iSCALE_FAC, m_ptPos.y*m_iSCALE_FAC);
+			glColor4f(1.0f,1.0f,1.0f,1.0f);
         }
     }
 }
@@ -256,7 +260,7 @@ HUDGroup::~HUDGroup()
 
 }
 
-void HUDGroup::draw(float32 fCurTime, DWORD dwCol)
+void HUDGroup::draw(float32 fCurTime)//, DWORD dwCol)
 {
     if(m_fStartTime == FLT_MIN)
         m_fStartTime = fCurTime;
@@ -264,12 +268,12 @@ void HUDGroup::draw(float32 fCurTime, DWORD dwCol)
     if(m_fFadeDelay != FLT_MAX && m_fFadeTime != FLT_MAX && fCurTime > m_fFadeDelay+m_fStartTime)
     {
         //We're using GETA() here so that we can nest groups safely. Why would we want to? I have no idea
-        dwCol = SETA(dwCol, (m_fFadeTime - ((fCurTime - (m_fFadeDelay+m_fStartTime)))/(m_fFadeTime))*GETA(dwCol));
+        col.a = (m_fFadeTime - ((fCurTime - (m_fFadeDelay+m_fStartTime)))/(m_fFadeTime))*col.a;
     }
 
     //Draw all the children with this alpha, if we aren't at alpha = 0
     if(fCurTime < m_fFadeDelay+m_fStartTime+m_fFadeTime)
-        HUDItem::draw(fCurTime, dwCol);
+        HUDItem::draw(fCurTime);//, dwCol);
 }
 
 void HUDGroup::event(SDL_Event event)
@@ -460,8 +464,8 @@ HUDItem* HUD::_getItem(XMLElement* elem)
         if(cFill != NULL)
         {
             //Get color to fill in background of textbox
-            DWORD dwFillCol = colorFromString(cFill);
-            tb->setFill(dwFillCol);
+            Color fillCol = colorFromString(cFill);
+            tb->fill = fillCol;//(dwFillCol);
         }
         return(tb);
     }

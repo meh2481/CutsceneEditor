@@ -6,6 +6,20 @@
 #include "globaldefs.h"
 #include <sstream>
 
+
+Color::Color()
+{
+    clear();
+}
+
+void Color::from256(int ir, int ig, int ib, int ia)
+{
+	r = (float32)ir/255.0;
+	g = (float32)ig/255.0;
+	b = (float32)ib/255.0;
+	a = (float32)ia/255.0;
+}
+
 string stripCommas(string s)
 {
     //Replace all ',' characters with ' '
@@ -42,15 +56,17 @@ Point pointFromString(string s)
     return pt;
 }
 
-DWORD colorFromString(string s)
+Color colorFromString(string s)
 {
     s = stripCommas(s);
 
     //Now, parse
-    uint16_t r,g,b,a;
+    float32 r,g,b,a;
     istringstream iss(s);
     iss >> r >> g >> b >> a;
-    return ARGB(a,r,g,b);
+	Color c;
+	c.set(r,g,b,a);
+    return c;
 }
 
 //TODO Use actual random number generator (Mersenne Twister or such)
