@@ -24,6 +24,7 @@ Object3D::Object3D(string sOBJFile, string sImgFile)
     m_sTexFilename = sImgFile;
     _add3DObjReload(this);
 	wireframe = false;
+	shaded = true;
 }
 
 Object3D::Object3D()
@@ -31,6 +32,7 @@ Object3D::Object3D()
   m_obj = m_tex = 0;
   _add3DObjReload(this);
   wireframe = false;
+  shaded = true;
 }
 
 Object3D::~Object3D()
@@ -409,12 +411,16 @@ void Object3D::setTexture(string sFilename)
 
 void Object3D::render()
 {
+	if(!shaded)
+		glDisable(GL_LIGHTING);
 	if(wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBindTexture(GL_TEXTURE_2D, m_tex);
     glCallList(m_obj);
 	if(wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	//Reset to drawing full faces
+	if(!shaded)
+		glEnable(GL_LIGHTING);
 }
 
 void Object3D::_reload()

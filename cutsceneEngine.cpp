@@ -478,6 +478,8 @@ void CutsceneEngine::writeObject(obj* object, XMLElement* parent, XMLDocument* d
 			XMLElement* o3d = doc->NewElement("mesh");
 			o3d->SetAttribute("mesh", (*i)->obj3D->getObjFilename().c_str());
 			o3d->SetAttribute("texture", (*i)->obj3D->getTexFilename().c_str());
+			if(!((*i)->obj3D->shaded))
+				o3d->SetAttribute("shaded", false);
 			segment->InsertEndChild(o3d);
 		}
 		
@@ -519,6 +521,9 @@ void CutsceneEngine::readObject(obj* object, XMLElement* actor)
 			
 			Object3D* o = new Object3D(sMesh, sTex);
 			ps->obj3D = o;
+			
+			//Don't care if this works or not...
+			o3d->QueryBoolAttribute("shaded", &o->shaded);
 		}
 		
 		object->addSegment(ps);

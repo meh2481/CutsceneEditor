@@ -8,7 +8,8 @@
 #include "Image.h"
 #include "globaldefs.h"
 
-#define NO_TEXTURE "image_none"	//Invalid image
+#define NO_TEXTURE 	"image_none"	//Invalid image
+#define NO_MESH		"mesh_none"		//Invalid 3D mesh
 
 class Vertex
 {
@@ -39,6 +40,7 @@ protected:
 
 public:
 	bool wireframe;	//If we're drawing in wireframe mode or not
+	bool shaded;	//If we're drawing this with OpenGL shading or not
     
     void _reload();  //Reload memory associated with this object
 
@@ -53,8 +55,8 @@ public:
     void render();
 	
 	//Accessor methods
-	string getObjFilename()	{return m_sObjFilename;};
-	string getTexFilename()	{return m_sTexFilename;};
+	string getObjFilename()	{if(m_obj)return m_sObjFilename;return NO_MESH;};
+	string getTexFilename()	{if(m_tex)return m_sTexFilename;return NO_TEXTURE;};
 
 
 };

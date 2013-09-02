@@ -17,9 +17,11 @@
 # Compiled executables
 CutsceneEditor
 CutsceneEditor.exe
-err.log
 
 # Editor output
 *.cutscene
+err.log
 
-
+# Resources
+*.tiny3d
+*.png

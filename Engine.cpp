@@ -31,7 +31,7 @@ bool Engine::_frame()
             m_ptCursorPos.y = event.motion.y;
         }
         if(event.type == SDL_QUIT)
-            return true;	//TODO: propogate event to application
+            return true;
     }
 
     //Get current key state
