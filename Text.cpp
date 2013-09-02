@@ -131,25 +131,6 @@ Point Text::sizeString(string sText)
     return ptResult;
 }
 
-/*void Text::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-{
-    if(m_imgFont != NULL)
-        m_imgFont->setColor(r,g,b,a);
-}
-
-void Text::setColor(DWORD dwCol)
-{
-    if(m_imgFont != NULL)
-        m_imgFont->setColor(dwCol);
-}*/
-
-//void Text::setScale(uint16_t iScaleFac)
-//{
-//    m_iSCALE_FAC = iScaleFac;
-//    if(m_imgFont != NULL)
-//        m_imgFont->scale(iScaleFac);
-//}
-
 void Text::setAlign(uint8_t iAlign)
 {
     m_iAlign = iAlign;

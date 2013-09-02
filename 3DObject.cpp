@@ -20,10 +20,6 @@ Object3D::Object3D(string sOBJFile, string sImgFile)
 		fromOBJFile(sOBJFile);
 	else
 		fromTiny3DFile(sOBJFile);
-    //pos.x = pos.y = pos.z = 0.0f;
-    //rot.x = rot.y = rot.z = 0.0f;
-    //scale.x = scale.y = scale.z = 1.0f;
-    //angle = 0.0f;
     m_sObjFilename = sOBJFile;
     m_sTexFilename = sImgFile;
     _add3DObjReload(this);
@@ -33,10 +29,6 @@ Object3D::Object3D(string sOBJFile, string sImgFile)
 Object3D::Object3D()
 {
   m_obj = m_tex = 0;
-  //pos.x = pos.y = pos.z = 0.0f;
-  //rot.x = rot.y = rot.z = 0.0f;
-  //scale.x = scale.y = scale.z = 1.0f;
-  //angle = 0.0f;
   _add3DObjReload(this);
   wireframe = false;
 }
@@ -197,6 +189,7 @@ void Object3D::fromOBJFile(string sFilename)
 }
 
 //Fall back on pure C functions for speed
+//TODO: On *nix systems, I ought to be able to mmap() to load even faster
 void Object3D::fromTiny3DFile(string sFilename)
 {
 	FILE* fp = fopen(sFilename.c_str(), "rb");
@@ -340,8 +333,7 @@ void Object3D::setTexture(string sFilename)
     // clean up
     SDL_FreeSurface(surface);
 #else
-  //errlog << "Load " << sFilename << endl;
-  //image format
+	//image format
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 	//pointer to the image, once loaded
 	FIBITMAP *dib(0);
@@ -358,10 +350,10 @@ void Object3D::setTexture(string sFilename)
 	//if still unkown, return failure
 	if(fif == FIF_UNKNOWN)
 	{
-    errlog << "Unknown image type for file " << sFilename << endl;
-	m_tex = 0;
-    return;
-  }
+		errlog << "Unknown image type for file " << sFilename << endl;
+		m_tex = 0;
+		return;
+	}
   
 	//check that the plugin has reading capabilities and load the file
 	if(FreeImage_FIFSupportsReading(fif))
@@ -369,35 +361,35 @@ void Object3D::setTexture(string sFilename)
 	//if the image failed to load, return failure
 	if(!dib)
 	{
-    errlog << "Error loading image " << sFilename << endl;
-	m_tex = 0;
-    return;
-  }  
+		errlog << "Error loading image " << sFilename << endl;
+		m_tex = 0;
+		return;
+	}  
 	//retrieve the image data
   
 	//get the image width and height
 	width = FreeImage_GetWidth(dib);
 	height = FreeImage_GetHeight(dib);
   
-  int w = power_of_two(width);
+	int w = power_of_two(width);
 	int h = power_of_two(height);
-  int mode;
-  if(FreeImage_GetBPP(dib) == 24) // RGB 24bit
-    mode = GL_RGB;
-  else if(FreeImage_GetBPP(dib) == 32)  // RGBA 32bit
-    mode = GL_RGBA;	
-  FIBITMAP *bitmap2 = FreeImage_Allocate(w, h, FreeImage_GetBPP(dib));
+	int mode;
+	if(FreeImage_GetBPP(dib) == 24) // RGB 24bit
+		mode = GL_RGB;
+	else if(FreeImage_GetBPP(dib) == 32)  // RGBA 32bit
+		mode = GL_RGBA;	
+	FIBITMAP *bitmap2 = FreeImage_Allocate(w, h, FreeImage_GetBPP(dib));
 	FreeImage_Paste(bitmap2, dib, 0, 0, 255);
-  FreeImage_FlipVertical(bitmap2);  //Apparently, FreeImage handles this strangely. Flipping beforehand doesn't work right.
-  FreeImage_Unload(dib);
+	FreeImage_FlipVertical(bitmap2);  //Apparently, FreeImage handles this strangely. Flipping beforehand doesn't work right.
+	FreeImage_Unload(dib);
   
 	bits = FreeImage_GetBits(bitmap2);	//if this somehow one of these failed (they shouldn't), return failure
 	if((bits == 0) || (width == 0) || (height == 0))
 	{
-    errlog << "Something went terribly horribly wrong with getting image bits; just sit and wait for the singularity" << endl;
-	m_tex = 0;
-    return;
-  }
+		errlog << "Something went terribly horribly wrong with getting image bits; just sit and wait for the singularity" << endl;
+		m_tex = 0;
+		return;
+	}
   
 	//generate an OpenGL texture ID for this texture
 	glGenTextures(1, &m_tex);
@@ -406,9 +398,9 @@ void Object3D::setTexture(string sFilename)
 	//store the texture data for OpenGL use
 	glTexImage2D(GL_TEXTURE_2D, 0, mode, w, h, 0, mode, GL_UNSIGNED_BYTE, bits);
   
-  // these affect how this texture is drawn later on...
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	// these affect how this texture is drawn later on...
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
   
 	//Free FreeImage's copy of the data
 	FreeImage_Unload(bitmap2);
@@ -419,13 +411,8 @@ void Object3D::render()
 {
 	if(wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //glPushMatrix();
-    //glTranslatef(pos.x, pos.y, pos.z);
-    //glRotatef(angle, rot.x, rot.y, rot.z);
-    //glScalef(scale.x, scale.y, scale.z);
     glBindTexture(GL_TEXTURE_2D, m_tex);
     glCallList(m_obj);
-    //glPopMatrix();
 	if(wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	//Reset to drawing full faces
 }

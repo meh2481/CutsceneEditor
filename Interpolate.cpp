@@ -4,14 +4,11 @@
 */
 #include "Interpolate.h"
 
-
-//template <class T>
 Interpolate::~Interpolate()
 {
   
 }
 
-//template <class T>
 Interpolate::Interpolate(float32* interpObj)
 {
   ptr = interpObj;
@@ -22,7 +19,6 @@ Interpolate::Interpolate(float32* interpObj)
   increment = 0.0f;
 }
 
-//template <class T>
 bool Interpolate::update(float32 fTimestep)
 {
   if(delay > 0.0f)
@@ -67,7 +63,6 @@ bool Interpolate::update(float32 fTimestep)
   return false;
 }
 
-//template <class T>
 void Interpolate::calculateIncrement(float32 finalVal, float32 fTime, bool bUseCurrent)
 {
   increment = (finalVal - ((bUseCurrent)?(*ptr):(initial))) / fTime;

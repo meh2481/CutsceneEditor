@@ -21,8 +21,8 @@ Image::Image(string sFilename)
 void Image::_load(string sFilename)
 {
 #ifdef __APPLE__  //For some reason, SDL_Image isn't working for me in PPC Mac. Hermph. Using FreeImage for now instead.
-  errlog << "Load " << sFilename << endl;
-  //image format
+	errlog << "Load " << sFilename << endl;
+	//image format
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 	//pointer to the image, once loaded
 	FIBITMAP *dib(0);
@@ -39,9 +39,9 @@ void Image::_load(string sFilename)
 	//if still unkown, return failure
 	if(fif == FIF_UNKNOWN)
 	{
-    errlog << "Unknown image type for file " << sFilename << endl;
-    return;
-  }
+		errlog << "Unknown image type for file " << sFilename << endl;
+		return;
+	}
   
 	//check that the plugin has reading capabilities and load the file
 	if(FreeImage_FIFSupportsReading(fif))
@@ -49,39 +49,39 @@ void Image::_load(string sFilename)
 	//if the image failed to load, return failure
 	if(!dib)
 	{
-    errlog << "Error loading image " << sFilename << endl;
-    return;
-  }  
+		errlog << "Error loading image " << sFilename << endl;
+		return;
+	}  
 	//retrieve the image data
   
 	//get the image width and height
 	width = FreeImage_GetWidth(dib);
 	height = FreeImage_GetHeight(dib);
   
-  int w = power_of_two(width);
+	int w = power_of_two(width);
 	int h = power_of_two(height);
-  int mode;
-  if(FreeImage_GetBPP(dib) == 24) // RGB 24bit
-    mode = GL_RGB;
-  else if(FreeImage_GetBPP(dib) == 32)  // RGBA 32bit
-    mode = GL_RGBA;	
-  FIBITMAP *bitmap2 = FreeImage_Allocate(w, h, FreeImage_GetBPP(dib));
+	int mode;
+	if(FreeImage_GetBPP(dib) == 24) // RGB 24bit
+		mode = GL_RGB;
+	else if(FreeImage_GetBPP(dib) == 32)  // RGBA 32bit
+		mode = GL_RGBA;	
+	FIBITMAP *bitmap2 = FreeImage_Allocate(w, h, FreeImage_GetBPP(dib));
 	FreeImage_Paste(bitmap2, dib, 0, 0, 255);
-  FreeImage_FlipVertical(bitmap2);  //Apparently, FreeImage handles this strangely. Flipping beforehand doesn't work right.
-  FreeImage_Unload(dib);
+	FreeImage_FlipVertical(bitmap2);  //Apparently, FreeImage handles this strangely. Flipping beforehand doesn't work right.
+	FreeImage_Unload(dib);
   
 	bits = FreeImage_GetBits(bitmap2);	//if this somehow one of these failed (they shouldn't), return failure
 	if((bits == 0) || (width == 0) || (height == 0))
 	{
-    errlog << "Something went terribly horribly wrong with getting image bits; just sit and wait for the singularity" << endl;
-    return;
-  }
+		errlog << "Something went terribly horribly wrong with getting image bits; just sit and wait for the singularity" << endl;
+		return;
+	}
   
 	//generate an OpenGL texture ID for this texture
-  m_iWidth = width;
-  m_iHeight = height;
-  m_iRealWidth = w;
-  m_iRealHeight = h;
+	m_iWidth = width;
+	m_iHeight = height;
+	m_iRealWidth = w;
+	m_iRealHeight = h;
 	glGenTextures(1, &m_hTex);
 	//bind to the new texture ID
 	glBindTexture(GL_TEXTURE_2D, m_hTex);
@@ -180,7 +180,6 @@ void Image::draw(Rect rcDrawPos, Rect rcImgPos)
 
     // make a rectangle
     glBegin(GL_QUADS);
-    //glColor4f(m_col.r,m_col.g,m_col.b,m_col.a);	//Colorize according to how we've colorized this image
     // top left
     glTexCoord2f((rcImgPos.left / (float32)w), (rcImgPos.top / (float32)h));
     glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)rcDrawPos.left/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)rcDrawPos.top/(GLfloat)screenDrawHeight + 1.0, 0.0);
@@ -194,20 +193,18 @@ void Image::draw(Rect rcDrawPos, Rect rcImgPos)
     glTexCoord2f((rcImgPos.right / (float32)w), (rcImgPos.top / (float32)h));
     glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(rcDrawPos.right)/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)rcDrawPos.top/(GLfloat)screenDrawHeight+1.0, 0.0);
 
-    //Reset color
-    //glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     glEnd();
 }
 
 void Image::draw4V(Point ul, Point ur, Point bl, Point br)
 {
-  if(m_hTex == 0)
-    return;
+	if(m_hTex == 0)
+		return;
   
-  // tell opengl to use the generated texture
-  glBindTexture(GL_TEXTURE_2D, m_hTex);
+	// tell opengl to use the generated texture
+	glBindTexture(GL_TEXTURE_2D, m_hTex);
   
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 	if(g_bBlurred)
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	else
@@ -224,22 +221,19 @@ void Image::draw4V(Point ul, Point ur, Point bl, Point br)
 #endif
   // make a rectangle
   glBegin(GL_QUADS);
-  //glColor4f(m_col.r,m_col.g,m_col.b,m_col.a);	//Colorize according to how we've colorized this image
   // top left
   glTexCoord2f(0.0f, 0.0f);
   glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)ul.x/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)ul.y/(GLfloat)screenDrawHeight + 1.0, 0.0);
   // bottom left
-  glTexCoord2f(0.0f, 1.0f);// (rcImgPos.bottom / (float32)h));
+  glTexCoord2f(0.0f, 1.0f);
   glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)bl.x/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)(bl.y)/(GLfloat)screenDrawHeight+1.0, 0.0);
   // bottom right
-  glTexCoord2f(1.0f, 1.0f);//(rcImgPos.right / (float32)w), (rcImgPos.bottom / (float32)h));
+  glTexCoord2f(1.0f, 1.0f);
   glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(br.x)/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)(br.y)/(GLfloat)screenDrawHeight+1.0, 0.0);
   // top right
-  glTexCoord2f(1.0f, 0.0f);//(rcImgPos.right / (float32)w), (rcImgPos.top / (float32)h));
+  glTexCoord2f(1.0f, 0.0f);
   glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(ur.x)/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)ur.y/(GLfloat)screenDrawHeight+1.0, 0.0);
   
-  //Reset color
-  //glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
   glEnd();
   
 }
@@ -283,31 +277,17 @@ void Image::drawCentered(float32 x, float32 y, Rect rcImgPos, float32 rotation, 
     rcDrawPos.set(0, 0, rcImgPos.width(), rcImgPos.height());
     rcDrawPos.scale(stretchFactorx,stretchFactory);
     rcDrawPos.offset(-rcDrawPos.width()/2.0 + (float32)screenDrawWidth/2.0, -rcDrawPos.height()/2.0 + (float32)screenDrawHeight/2.0);
-    //glLoadIdentity( );
     glPushMatrix();
     glTranslatef( (2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(x)/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)(y)/(GLfloat)screenDrawHeight + 1.0, 0.0);//MAGIC_ZOOM_NUMBER);
     glRotatef(-rotation*180.0/PI,0.0f,0.0f,1.0f);
-    //glScalef(stretchFactorx, stretchFactory, 1.0f);
     draw(rcDrawPos, rcImgPos);
     glPopMatrix();  //Reset
-    //Reset rotation
-    //glLoadIdentity( );
-    //glTranslatef( 0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
-    //glScalef(1.0/stretchFactorx, 1.0/stretchFactory, 1.0f);
-    //glRotatef(rotation*180.0/PI,0.0f,0.0f,1.0f);
-    //glTranslatef( -((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(x)/(GLfloat)screenDrawWidth-0.5)), -(-2.0*(GLfloat)(y)/(GLfloat)screenDrawHeight + 1.0), 0.0);
 }
 
 void Image::drawCentered(Point pt, Rect rcImgPos, float32 rotation, float32 stretchFactorx, float32 stretchFactory)
 {
     drawCentered(pt.x, pt.y, rcImgPos, rotation, stretchFactorx, stretchFactory);
 }
-
-//Set the color of this image
-/*void Image::setColor(DWORD dwCol)
-{
-    m_col.from256((dwCol & 0xFF0000) >> 16, (dwCol & 0xFF00) >> 8, dwCol & 0xFF, (dwCol & 0xFF000000) >> 24);
-}*/
 
 void Image::_reload()
 {

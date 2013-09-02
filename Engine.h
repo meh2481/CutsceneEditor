@@ -34,7 +34,6 @@ class Engine
 {
 private:
     //Variables for use by the engine
-//    HGE* m_hge;
 	string m_sTitle;
 	list<commandlineArg> lCommandLine;
     b2World* m_physicsWorld;
@@ -45,10 +44,9 @@ private:
     float32 m_fTargetTime;
     map<string, Image*> m_mImages;  //Image handler
     map<string, string> m_mImageNames;  //And names of images
-//    map<string, HEFFECT> m_mSounds; //Sound handler
+	//TODO: Sound handler
     map<string, string> m_mSoundNames; //And names of sounds
     list<Interpolate*> m_lInterpolations;  //Keep track of stuff that's interpolating
-//    HCHANNEL m_MusicChannel;        //Sound channel we play our music on
     bool m_bFirstMusic; //Don't stop a previous song playing if there is none
     string m_sLastMusic;    //Last song we played, so we can pause/resume songs instead of restarting them
     bool m_bQuitting;   //Stop the game if this turns true
@@ -65,7 +63,6 @@ private:
     void _render();
     
     void _interpolations(float32 dt); //update any interpolating variables
-//    HEFFECT _getEffect(string sName);
     void setup_sdl();
     void setup_opengl();
 
@@ -99,7 +96,6 @@ public:
     void pauseMusic();                                                                     //Pause music that's currently playing
     bool keyDown(int32_t keyCode);  //Test and see if a key is currently pressed
     void quit() {m_bQuitting = true;};  //Stop the engine and quit nicely
-//    void scaleImages(uint16_t scaleFac);    //scale all images by scaleFac
     float32 getTime()      {return (float32)SDL_GetTicks()/1000.0;}; //Get the time the engine's been running
     Rect getScreenRect()    {Rect rc = {0,0,getWidth(),getHeight()}; return rc;};
     b2Body* createBody(b2BodyDef* bdef) {return m_physicsWorld->CreateBody(bdef);};
@@ -124,10 +120,6 @@ public:
     uint16_t getHeight() {return m_iHeight;};
 
 };
-
-//bool frameFunc();
-//bool renderFunc();
-
 
 
 #endif

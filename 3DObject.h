@@ -38,10 +38,6 @@ protected:
     string m_sTexFilename;
 
 public:
-    //Vertex pos;
-    //Vertex rot;
-    //Vertex scale;
-    //float32 angle;  //REDUNDANT
 	bool wireframe;	//If we're drawing in wireframe mode or not
     
     void _reload();  //Reload memory associated with this object

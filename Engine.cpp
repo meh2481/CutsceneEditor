@@ -8,9 +8,9 @@ ofstream errlog("err.log");
 
 
 GLfloat LightAmbient[]  = { 0.1f, 0.1f, 0.1f, 1.0f };
-/* Diffuse Light Values */
+// Diffuse Light Values
 GLfloat LightDiffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
-/* Light Position */
+// Light Position 
 GLfloat LightPosition[] = { 0.0f, 0.0f, 2.0f, 1.0f };
 
 
@@ -38,14 +38,12 @@ bool Engine::_frame()
     m_iKeystates = SDL_GetKeyState(NULL);
 
     float32 fCurTime = (float32)SDL_GetTicks()/1000.0;
-    //m_fAccumulatedTime += dt;
     if(m_fAccumulatedTime <= fCurTime)
     {
         m_fAccumulatedTime += m_fTargetTime;
         //Box2D wants fixed timestep, so we use target framerate here instead of actual elapsed time
         m_physicsWorld->Step(m_fTargetTime, VELOCITY_ITERATIONS, PHYSICS_ITERATIONS);
         //Use cycle time for everything else
-        //float32 fCycleTime = getTime() - m_fLastCycle;
         _interpolations(m_fTargetTime);
         frame();
         _render();
@@ -70,7 +68,7 @@ void Engine::_render()
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef( 0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
-  //glClear(GL_DEPTH_BUFFER_BIT); //Draw cursor over everything
+	//glClear(GL_DEPTH_BUFFER_BIT); //TODO Draw cursor over everything
 	glPopMatrix();
 	
     // End rendering and update the screen
@@ -114,14 +112,7 @@ Engine::~Engine()
 	errlog << "Clearing interps" << endl;
     clearInterpolations();
 
-    //TODO Any form of OpenGL cleanup?
-
-    //Clean up our sound effects
-    /*for(map<string, HEFFECT>::iterator i = m_mSounds.begin(); i != m_mSounds.end(); i++)
-    {
-        errlog << "Freeing sound effect \"" << i->first << "\"" << endl;
-        m_hge->Effect_Free(i->second);
-    }*/
+    //TODO: Clean up our sound effects
 
     // Clean up and shutdown
 	errlog << "Deleting phys world" << endl;
@@ -179,7 +170,7 @@ Image* Engine::getImage(string sName)
         Image* img = new Image(m_mImageNames[sName]);   //Create this image
         m_mImages[sName] = img; //Add to the map
         img->_setID(m_mImages.size());   //For now, just numbering 0...n will work for an ID
-//        img->scale(m_iImgScaleFac); //Scale this image on creation
+		//TODO: What is an ID even good for?
         return img;
     }
     return i->second; //Return this image
@@ -199,47 +190,19 @@ void Engine::createSound(string sPath, string sName)
     m_mSoundNames[sName] = sPath;
 }
 
-/*HEFFECT Engine::_getEffect(string sName)
-{
-    map<string, HEFFECT>::iterator i = m_mSounds.find(sName);
-    if(i == m_mSounds.end())   //This sound isn't here yet; load
-    {
-        errlog << "Loading sound effect \"" << sName << "\" from file \"" << m_mSoundNames[sName] << "\"" << endl;
-        HEFFECT eff = m_hge->Effect_Load(m_mSoundNames[sName].c_str());
-        m_mSounds[sName] = eff; //Add to the map
-        return eff;
-    }
-    return i->second; //Return this sound
-}*/
-
 void Engine::playSound(string sName, int volume, int pan, float32 pitch)
 {
-    //HEFFECT eff = _getEffect(sName);
-    //m_hge->Effect_PlayEx(eff,volume,pan,pitch);
+    // TODO
 }
 
 void Engine::pauseMusic()
 {
-    //if(!m_bFirstMusic)
-    //    m_hge->Channel_Pause(m_MusicChannel);
+    // TODO
 }
 
 void Engine::playMusic(string sName, int volume, int pan, float32 pitch)
 {
-    /*HEFFECT eff = _getEffect(sName); //Can take a while, depending on the song
-    //if(!m_bFirstMusic)
-    //{
-        if(sName == m_sLastMusic)
-        {
-            m_hge->Channel_Resume(m_MusicChannel);
-            return;
-        }
-        else
-            m_hge->Channel_Stop(m_MusicChannel);
-    }
-    m_sLastMusic = sName;
-    m_MusicChannel = m_hge->Effect_PlayEx(eff,volume,pan,pitch,true);
-    m_bFirstMusic = false;*/
+	//TODO
 }
 
 bool Engine::keyDown(int32_t keyCode)
@@ -397,6 +360,7 @@ void Engine::setup_opengl()
 
 void Engine::changeScreenResolution(float32 w, float32 h)
 {
+  //TODO: Windoze has stuff for this, Mac/Linux ought to as well
   screenDrawWidth = m_iWidth = w;
   screenDrawHeight = m_iHeight = h;
   const SDL_VideoInfo* video = SDL_GetVideoInfo();

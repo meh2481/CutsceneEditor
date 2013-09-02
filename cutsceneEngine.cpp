@@ -87,20 +87,7 @@ void CutsceneEngine::draw()
 	glLoadIdentity();
 	glTranslatef(CameraPos.x, CameraPos.y, CameraPos.z);
 	glRotatef(90.0f,1.0f,0.0f,0.0f);
-	drawActors();
-  
-	//GFX hello world stuff
-	/*glLoadIdentity();
-	glTranslatef( 0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
-	glDisable(GL_LIGHTING);
-	Rect m_rcViewScreen;
-	m_rcViewScreen.set(0,0,getWidth()/2,getHeight()/2);
-	fillRect(m_rcViewScreen, 255, 0, 0, 100);
-	m_rcViewScreen.offset(0,getHeight()/2);
-	fillRect(m_rcViewScreen, 0, 255, 0, 100);
-	m_rcViewScreen.offset(getWidth()/2,0);
-	fillRect(m_rcViewScreen, 0, 0, 255, 100);*/
-        
+	drawActors();        
 }
 
 void CutsceneEngine::init(list<commandlineArg> sArgs)
@@ -353,7 +340,6 @@ void CutsceneEngine::drawActors()
 		else if(i == m_CurSelectedActor)	//Selected actor pulses red
 			(*i)->col.set(selectionPulse.r, selectionPulse.g, selectionPulse.b, selectionPulse.a);
 		(*i)->draw();
-		//(*i)->col.clear();
 		//Draw center
 		glPushMatrix();
 		if(i == m_CurSelectedParent)
@@ -371,27 +357,12 @@ void CutsceneEngine::drawActors()
 		glPopMatrix();
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
 	}
+	
+	//Loop back through and clear colors, so we aren't dependent on list order for when colors are set or cleared
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 		(*i)->col.clear();
+	
 	glDisable(GL_LIGHTING);
-	
-	/* DEBUG: Draw cursor sort of thing where cursor is
-	Vertex pos;
-	Point cursorpos = getCursorPos();
-	pos.x = cursorpos.x - getWidth()/2.0;
-	pos.y = cursorpos.y - getHeight()/2.0;
-	pos.z = 0;
-	
-	pos.x /= 180.0;
-	pos.y /= 180.0;
-	
-	glPushMatrix();
-	glColor4f(0.0,0.0,1.0,1.0);
-	glTranslatef(pos.x, pos.z, pos.y);
-	glScalef(0.01f, 0.01f, 0.01f);
-	m_centerDraw->render();
-	glPopMatrix();
-	glColor4f(1.0f,1.0f,1.0f,1.0f);*/
 }
 
 list<obj*>::iterator CutsceneEngine::findClosestObject(Vec3 pos)

@@ -7,10 +7,6 @@
 
 #include "globaldefs.h"
 
-//TODO: Should be variable or such
-//extern int SCREEN_WIDTH;//  800.0
-//extern int SCREEN_HEIGHT;// 600.0
-
 //TODO: Figure out what causes this and calculate mathematically? Or just live with it?
 #define MAGIC_ZOOM_NUMBER -2.414213562373095
 
@@ -19,22 +15,17 @@ class Image
 private:
     Image(){};  //Default constructor is uncallable
 
-    GLuint   m_hTex;
-//    hgeSprite* m_hSprite;
-    //Point m_ptHotSpot;
-    string     m_sFilename;
-    uint32_t m_iWidth, m_iHeight;
+    GLuint   	m_hTex;
+    string     	m_sFilename;
+    uint32_t 	m_iWidth, m_iHeight;
 #ifdef __APPLE__
-    uint32_t m_iRealWidth, m_iRealHeight;
+    uint32_t 	m_iRealWidth, m_iRealHeight;
 #endif
-    uint32_t m_iID;  //TODO: Remove/isolate/optimize
-//    uint16_t m_iScaleFac;
+    uint32_t 	m_iID;  //TODO: Remove/isolate/optimize
 
     void _load(string sFilename);
 
-public:
-    //Color m_col;
-    
+public:    
     //Constructor/destructor
     Image(string sFilename);
     ~Image();
@@ -62,16 +53,6 @@ public:
     void drawCentered(Point pt, float32 rotation = 0.0, float32 stretchFactorx = 1.0, float32 stretchFactory = 1.0);    //Center the entire image centered at pt
     void drawCentered(float32 x, float32 y, Rect rcImgPos, float32 rotation = 0.0, float32 stretchFactorx = 1.0, float32 stretchFactory = 1.0);    //Center part of the image at x,y
     void drawCentered(Point pt, Rect rcImgPos, float32 rotation = 0.0, float32 stretchFactorx = 1.0, float32 stretchFactory = 1.0);    //Center part of the image at pt
-
-    //void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {m_col.from256(r,g,b,a);};  //Set the image to this color
-    //void setColor(DWORD dwCol);
-    //void setColor(Color col)    {m_col = col;};
-    //Color getColor()            {return m_col;};
-    //void setColor(float32 r, float32 g, float32 b, float32 a = 1.0) {m_col.set(r,g,b,a);};
-//    void scale(uint16_t iScaleFac); //Scales this image up by a given factor from the original, without interpolation. (scale(1) to reset to original size)
-    //void setHotSpot(float32 x, float32 y)   {m_ptHotSpot.x=x;m_ptHotSpot.y=y;};
-    //Point getHotSpot()                      {return m_ptHotSpot;};
-    //void setHotSpot(Point pt)               {setHotSpot(pt.x, pt.y);};
 };
 
 //Image reloading handler functions

@@ -7,7 +7,6 @@
 
 #include "globaldefs.h"
 
-//template <class T>
 class Interpolate
 {
   Interpolate(){};

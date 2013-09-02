@@ -30,7 +30,7 @@ void HUDItem::event(SDL_Event event)
         (*i)->event(event);
 }
 
-void HUDItem::draw(float32 fCurTime)//, DWORD dwCol)
+void HUDItem::draw(float32 fCurTime)
 {
     //Base class does nothing with this, except pass on
     for(list<HUDItem*>::iterator i = m_lChildren.begin(); i != m_lChildren.end(); i++)
@@ -50,8 +50,7 @@ void HUDItem::addChild(HUDItem* hiChild)
 {
     if(hiChild == NULL)
         return;
-    //hiChild->setSignalHandler(m_signalHandler);
-//    hiChild->setScale(m_iSCALE_FAC);
+    //hiChild->setSignalHandler(m_signalHandler);	//TODO: Why not?
     m_lChildren.push_back(hiChild);
 }
 
@@ -69,15 +68,6 @@ HUDItem* HUDItem::getChild(string sName)
     return NULL;    //Base case 2: No child of this with that name
 }
 
-/*void HUDItem::setScale(uint16_t iScale)
-{
-    m_iSCALE_FAC = iScale;
-    for(list<HUDItem*>::iterator i = m_lChildren.begin(); i != m_lChildren.end(); i++)
-    {
-        (*i)->setScale(iScale);
-    }
-}*/
-
 //-------------------------------------------------------------------------------------
 // HUDImage class functions
 //-------------------------------------------------------------------------------------
@@ -91,28 +81,20 @@ HUDImage::~HUDImage()
 
 }
 
-void HUDImage::draw(float32 fCurTime)//, DWORD dwCol)
+void HUDImage::draw(float32 fCurTime)
 {
-    HUDItem::draw(fCurTime);//, dwCol);
+    HUDItem::draw(fCurTime);
     if(m_img != NULL)
     {
-        //m_img->setColor(dwCol);
 		glColor4f(col.r,col.g,col.b,col.a);
         m_img->draw(m_ptPos.x * m_iSCALE_FAC, m_ptPos.y * m_iSCALE_FAC);
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
     }
 }
 
-/*void HUDImage::setScale(uint16_t iScale)
-{
-//    HUDItem::setScale(iScale);
-//    m_img->scale(iScale);
-}*/
-
 void HUDImage::setImage(Image* img)
 {
     m_img = img;
-//    img->scale(m_iSCALE_FAC);
 }
 
 //-------------------------------------------------------------------------------------
@@ -122,16 +104,15 @@ HUDTextbox::HUDTextbox(string sName) : HUDItem(sName)
 {
     m_iAlign = ALIGN_RIGHT | ALIGN_BOTTOM;
     m_txtFont = NULL;
-    //m_dwFill = 0;
 }
 
 HUDTextbox::~HUDTextbox()
 {
 }
 
-void HUDTextbox::draw(float32 fCurTime)//, DWORD dwCol)
+void HUDTextbox::draw(float32 fCurTime)
 {
-    HUDItem::draw(fCurTime);//, dwCol);
+    HUDItem::draw(fCurTime);
     if(m_txtFont == NULL) return;
 
     m_txtFont->setAlign(m_iAlign);
@@ -158,12 +139,6 @@ void HUDTextbox::draw(float32 fCurTime)//, DWORD dwCol)
     //Render the text
     m_txtFont->render(m_sValue, m_ptPos.x*m_iSCALE_FAC, m_ptPos.y*m_iSCALE_FAC);
 }
-
-/*void HUDTextbox::setScale(uint16_t iScale)
-{
-    HUDItem::setScale(iScale);
-    m_txtFont->setScale(iScale);
-}*/
 
 void HUDTextbox::setText(uint32_t iNum)
 {
@@ -198,9 +173,9 @@ void HUDToggle::event(SDL_Event event)
     }
 }
 
-void HUDToggle::draw(float32 fCurTime)//, DWORD dwCol)
+void HUDToggle::draw(float32 fCurTime)
 {
-    HUDItem::draw(fCurTime);//, dwCol);
+    HUDItem::draw(fCurTime);
 
     if(m_bValue)    //Draw enabled image
     {
@@ -222,27 +197,14 @@ void HUDToggle::draw(float32 fCurTime)//, DWORD dwCol)
     }
 }
 
-/*void HUDToggle::setScale(uint16_t iScale)
-{
-    HUDItem::setScale(iScale);
-//    if(m_imgEnabled != NULL)
-//        m_imgEnabled->scale(iScale);
-//    if(m_imgDisabled != NULL)
-//        m_imgDisabled->scale(iScale);
-}*/
-
 void HUDToggle::setEnabledImage(Image* img)
 {
     m_imgEnabled = img;
-//    if(m_imgEnabled != NULL)
-//        m_imgEnabled->scale(m_iSCALE_FAC);
 }
 
 void HUDToggle::setDisabledImage(Image* img)
 {
     m_imgDisabled = img;
-//    if(m_imgDisabled != NULL)
-//        m_imgDisabled->scale(m_iSCALE_FAC);
 }
 
 //-------------------------------------------------------------------------------------
@@ -260,20 +222,20 @@ HUDGroup::~HUDGroup()
 
 }
 
-void HUDGroup::draw(float32 fCurTime)//, DWORD dwCol)
+void HUDGroup::draw(float32 fCurTime)
 {
     if(m_fStartTime == FLT_MIN)
         m_fStartTime = fCurTime;
 
     if(m_fFadeDelay != FLT_MAX && m_fFadeTime != FLT_MAX && fCurTime > m_fFadeDelay+m_fStartTime)
     {
-        //We're using GETA() here so that we can nest groups safely. Why would we want to? I have no idea
+        //We're multiplying by col.a again here so that we can nest groups safely. Why would we want to? I have no idea
         col.a = (m_fFadeTime - ((fCurTime - (m_fFadeDelay+m_fStartTime)))/(m_fFadeTime))*col.a;
     }
 
     //Draw all the children with this alpha, if we aren't at alpha = 0
     if(fCurTime < m_fFadeDelay+m_fStartTime+m_fFadeTime)
-        HUDItem::draw(fCurTime);//, dwCol);
+        HUDItem::draw(fCurTime);
 }
 
 void HUDGroup::event(SDL_Event event)
@@ -465,7 +427,7 @@ HUDItem* HUD::_getItem(XMLElement* elem)
         {
             //Get color to fill in background of textbox
             Color fillCol = colorFromString(cFill);
-            tb->fill = fillCol;//(dwFillCol);
+            tb->fill = fillCol;
         }
         return(tb);
     }
@@ -512,19 +474,6 @@ void HUD::destroy()
     delete (*i);
   m_lChildren.clear();
 }
-
-/*void HUD::setScale(uint16_t iScale)
-{
-//    HUDItem::setScale(iScale);
-//    for(map<string, Image*>::iterator i = m_mImages.begin(); i != m_mImages.end(); i++)
-//        i->second->scale(iScale);
-//    for(map<string, Text*>::iterator i = m_mFonts.begin(); i != m_mFonts.end(); i++)
-//        i->second->setScale(iScale);
-}*/
-
-
-
-
 
 
 

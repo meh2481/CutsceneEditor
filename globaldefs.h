@@ -34,18 +34,6 @@ using namespace tinyxml2;
 #define RAD2DEG 180.0f/PI  //Convert radians to degrees
 #define DIFF_EPSILON 0.0000001      //HACK: How much different two vectors must be to register as a difference
 
-
-//TODO Remove
-//#ifndef _WIN32
-//typedef uint32_t DWORD;
-//#endif
-//#define ARGB(a,r,g,b)	((DWORD(a)<<24) + (DWORD(r)<<16) + (DWORD(g)<<8) + DWORD(b))
-//#define GETA(col)		((col)>>24)
-//#define GETR(col)		(((col)>>16) & 0xFF)
-//#define GETG(col)		(((col)>>8) & 0xFF)
-//#define GETB(col)		((col) & 0xFF)
-//#define SETA(col,a)		(((col) & 0x00FFFFFF) + (DWORD(a)<<24))
-
 class Color
 {
 public:
