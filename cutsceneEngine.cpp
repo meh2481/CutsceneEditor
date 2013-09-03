@@ -87,7 +87,7 @@ void CutsceneEngine::draw()
 	glLoadIdentity();
 	glTranslatef(CameraPos.x, CameraPos.y, CameraPos.z);
 	glRotatef(90.0f,1.0f,0.0f,0.0f);
-	drawActors();        
+	drawActors();   
 }
 
 void CutsceneEngine::init(list<commandlineArg> sArgs)
@@ -276,7 +276,20 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             }
             else if(m_bDragRot && m_CurSelectedActor != m_lActors.end())
             {
-				(*m_CurSelectedActor)->rot += event.motion.xrel/170.0;
+				Point center = (*m_CurSelectedActor)->getPos();
+				center *= 180.0f;
+				center.x += getWidth()/2.0;
+				center.y += getHeight()/2.0;
+				Point oldPos;
+				oldPos.x = event.motion.x - event.motion.xrel;
+				oldPos.y = event.motion.y - event.motion.yrel;
+				Point newPos;
+				newPos.x = event.motion.x;
+				newPos.y = event.motion.y;
+				float32 startAngle, endAngle;
+				startAngle = atan2((oldPos.y - center.y),(oldPos.x - center.x));
+				endAngle = atan2((newPos.y - center.y),(newPos.x - center.x));
+				(*m_CurSelectedActor)->rot += startAngle - endAngle;
             }
 			else //No button down; choose object to select
 			{
