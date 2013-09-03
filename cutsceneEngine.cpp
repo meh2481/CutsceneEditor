@@ -63,7 +63,7 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 	m_centerDraw = new Object3D("res/selectball.tiny3d", NO_TEXTURE);
 	m_centerDraw->wireframe = true;
 	
-	m_bDragPos = m_bDragRot = false;
+	m_bDragPos = m_bDragRot = m_bPanScreen = false;
 	m_bConstrainX = m_bConstrainY = false;
 }
 
@@ -75,6 +75,19 @@ CutsceneEngine::~CutsceneEngine()
 		delete (*i);
 		
 	delete m_centerDraw;
+}
+
+float32 CutsceneEngine::mouseScaleFac()
+{
+	return ((-4.0/CameraPos.z) * 180.0);	//Magic numbers ftw
+}
+
+Point CutsceneEngine::getPannedMousePos()
+{
+	Point cursorpos = getCursorPos();
+	cursorpos.x -= CameraPos.x*mouseScaleFac();
+	cursorpos.y += CameraPos.y*mouseScaleFac();
+	return cursorpos;
 }
 
 void CutsceneEngine::frame()
@@ -158,15 +171,10 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 				case SDLK_x: //Constrain to only move along X axis
 					if(m_CurSelectedActor != m_lActors.end() && m_bDragPos)
 					{
-						m_bConstrainX = !m_bConstrainX;
-						if(m_bConstrainX)	//Snap Y back to 0 difference
+						if(!m_bConstrainX && !m_bConstrainY)	//Snap Y back to 0 difference
 						{
 							(*m_CurSelectedActor)->pos.y = m_ptOldPos.y;
-						}
-						else	//Snap Y to where it would have been
-						{
-							Point cursorpos = getCursorPos();
-							(*m_CurSelectedActor)->pos.y = (*m_CurSelectedActor)->getPos().y - (*m_CurSelectedActor)->pos.y + (cursorpos.y - getHeight()/2.0) / 180.0;
+							m_bConstrainX = true;
 						}
 					}
 					break;
@@ -174,15 +182,10 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 				case SDLK_y: //Constrain to only move along Y axis
 					if(m_CurSelectedActor != m_lActors.end() && m_bDragPos)
 					{
-						m_bConstrainY = !m_bConstrainY;
-						if(m_bConstrainY)	//Snap X back to 0 difference
+						if(!m_bConstrainY && !m_bConstrainX)	//Snap X back to 0 difference
 						{
 							(*m_CurSelectedActor)->pos.x = m_ptOldPos.x;
-						}
-						else	//Snap X to where it would have been
-						{
-							Point cursorpos = getCursorPos();
-							(*m_CurSelectedActor)->pos.x = (*m_CurSelectedActor)->getPos().x - (*m_CurSelectedActor)->pos.x + (cursorpos.x - getWidth()/2.0) / 180.0;
+							m_bConstrainY = true;
 						}
 					}
 					break;
@@ -250,19 +253,36 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					}
 				}
             }
+			else if(event.button.button == SDL_BUTTON_WHEELUP)
+			{
+				if(!m_bDragPos && !m_bDragRot && !m_bPanScreen)
+					CameraPos.z = min(CameraPos.z + 0.2, 0.0);
+			}
+			else if(event.button.button == SDL_BUTTON_WHEELDOWN)
+			{
+				if(!m_bDragPos && !m_bDragRot && !m_bPanScreen)
+					CameraPos.z = max(CameraPos.z - 0.2, -20.0);
+			}
+			else if(event.button.button == SDL_BUTTON_MIDDLE)
+			{
+				if(!m_bDragPos && !m_bDragRot)
+					m_bPanScreen = true;
+			}
             break;
 
         case SDL_MOUSEBUTTONUP:
             if(event.button.button == SDL_BUTTON_LEFT)
             {
 				m_bConstrainX = m_bConstrainY = false;
-				if(m_bDragPos)
-					m_bDragPos = false;
+				m_bDragPos = false;
             }
 			else if(event.button.button == SDL_BUTTON_RIGHT)
 			{
-				if(m_bDragRot)
-					m_bDragRot = false;
+				m_bDragRot = false;
+			}
+			else if(event.button.button == SDL_BUTTON_MIDDLE)
+			{
+				m_bPanScreen = false;
 			}
             break;
 
@@ -270,36 +290,41 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             if(m_bDragPos && m_CurSelectedActor != m_lActors.end())
             {
 				if(!m_bConstrainY)
-					(*m_CurSelectedActor)->pos.x += event.motion.xrel/(180.0);
+					(*m_CurSelectedActor)->pos.x += event.motion.xrel/(mouseScaleFac());
 				if(!m_bConstrainX)
-					(*m_CurSelectedActor)->pos.y += event.motion.yrel/(180.0);
+					(*m_CurSelectedActor)->pos.y += event.motion.yrel/(mouseScaleFac());
             }
             else if(m_bDragRot && m_CurSelectedActor != m_lActors.end())
             {
 				Point center = (*m_CurSelectedActor)->getPos();
-				center *= 180.0f;
+				center *= mouseScaleFac();
 				center.x += getWidth()/2.0;
 				center.y += getHeight()/2.0;
 				Point oldPos;
-				oldPos.x = event.motion.x - event.motion.xrel;
-				oldPos.y = event.motion.y - event.motion.yrel;
+				oldPos.x = getPannedMousePos().x - event.motion.xrel;
+				oldPos.y = getPannedMousePos().y - event.motion.yrel;
 				Point newPos;
-				newPos.x = event.motion.x;
-				newPos.y = event.motion.y;
+				newPos.x = getPannedMousePos().x;
+				newPos.y = getPannedMousePos().y;
 				float32 startAngle, endAngle;
 				startAngle = atan2((oldPos.y - center.y),(oldPos.x - center.x));
 				endAngle = atan2((newPos.y - center.y),(newPos.x - center.x));
 				(*m_CurSelectedActor)->rot += startAngle - endAngle;
             }
+			else if(m_bPanScreen)
+			{
+				CameraPos.x += event.motion.xrel/(mouseScaleFac());
+				CameraPos.y -= event.motion.yrel/(mouseScaleFac());
+			}
 			else //No button down; choose object to select
 			{
 				Vec3 pos;
-				pos.x = event.motion.x - getWidth()/2.0;
-				pos.y = event.motion.y - getHeight()/2.0;
+				pos.x = getPannedMousePos().x - getWidth()/2.0;
+				pos.y = getPannedMousePos().y - getHeight()/2.0;
 				pos.z = 0;
 				
-				pos.x /= 180.0;
-				pos.y /= 180.0;
+				pos.x /= mouseScaleFac();
+				pos.y /= mouseScaleFac();
 				m_CurSelectedActor = findClosestObject(pos);
 			}
             break;

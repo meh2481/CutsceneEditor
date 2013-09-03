@@ -23,13 +23,13 @@ bool Engine::_frame()
     SDL_Event event;
     while(SDL_PollEvent(&event))
     {
-        handleEvent(event);
-        //See if cursor has moved
+        //Update internal cursor position if cursor has moved
         if(event.type == SDL_MOUSEMOTION)
         {
             m_ptCursorPos.x = event.motion.x;
             m_ptCursorPos.y = event.motion.y;
         }
+        handleEvent(event);
         if(event.type == SDL_QUIT)
             return true;
     }

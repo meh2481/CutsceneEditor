@@ -27,6 +27,7 @@ private:
   float32 m_fOldRot;
   bool m_bDragPos;
   bool m_bDragRot;
+  bool m_bPanScreen;
   bool m_bConstrainX;
   bool m_bConstrainY;
 
@@ -35,6 +36,8 @@ protected:
     void draw();
     void init(list<commandlineArg> sArgs);
     void handleEvent(SDL_Event event);
+	float32 mouseScaleFac();
+	Point getPannedMousePos();
 
 public:
     CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle);
