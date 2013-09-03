@@ -1,3 +1,4 @@
+SHELL=C:/Windows/System32/cmd.exe
 objects := 3DObject.o Image.o Engine.o Object.o Text.o globaldefs.o hud.o main.o tinyxml2.o Interpolate.o cutsceneEngine.o arc.o
 libs := -L./lib/Win32 -lopengl32 -lglu32 -lSDLmain -lSDL -lSDL_image -ltinyxml2 -lttvfs -lBox2D -lwinmm -ldxguid -lgdi32 -static-libgcc -static-libstdc++
 
