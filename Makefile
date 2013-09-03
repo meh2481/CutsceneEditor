@@ -3,13 +3,13 @@
 # Default to 'make -f Makefile.unix' for Linux and for unknown OS. 
 #
 OS = $(shell uname -s)
-MAKEFILE = win
+MAKEFILE = unix
 
 ifeq ($(OS), Darwin)
     MAKEFILE = osx
 endif
-ifeq ($(OS), Linux)
-    MAKEFILE = unix
+ifneq (,$(findstring MINGW,$(OS)))
+    MAKEFILE = mingw
 endif
 
 default:

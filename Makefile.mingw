@@ -1,0 +1,18 @@
+objects := 3DObject.o Image.o Engine.o Object.o Text.o globaldefs.o hud.o main.o tinyxml2.o Interpolate.o cutsceneEngine.o arc.o
+libs := -L./lib/Win32 -lopengl32 -lglu32 -lSDLmain -lSDL -lSDL_image -ltinyxml2 -lttvfs -lBox2D -lwinmm -ldxguid -lgdi32 -static-libgcc -static-libstdc++
+
+all: CutsceneEditor
+
+CutsceneEditor: $(objects) cutsceneEditor.res
+	g++ -o $@ $^ $(libs) 
+
+%.o: %.cpp
+	g++ -c -MMD -o $@ $<
+
+%.res: %.rc
+	windres $< -O coff -o $@
+
+-include $(objects:.o=.d)
+
+clean:
+	rm -f *.o *.d CutsceneEditor.exe
