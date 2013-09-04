@@ -223,7 +223,17 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 		case SDL_MOUSEBUTTONDOWN:
             if(event.button.button == SDL_BUTTON_LEFT)	//Left mouse button: Drag
             {
-				if(m_CurSelectedActor != m_lActors.end())
+				if(keyDown(SDLK_LCTRL) || keyDown(SDLK_RCTRL))	//Ctrl-clicking is equivalent to MMB
+				{
+					if(!m_bDragPos && !m_bDragRot)
+						m_bPanScreen = true;
+					else if(m_bDragRot)
+					{
+						m_bDragRot = false;
+						(*m_CurSelectedActor)->rot = m_fOldRot;
+					}
+				}
+				else if(m_CurSelectedActor != m_lActors.end())
 				{
 					if(m_bDragRot)
 					{
@@ -267,6 +277,16 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 			{
 				if(!m_bDragPos && !m_bDragRot)
 					m_bPanScreen = true;
+				else if(m_bDragPos)
+				{
+					m_bDragPos = false;
+					(*m_CurSelectedActor)->pos = m_ptOldPos;
+				}
+				else if(m_bDragRot)
+				{
+					m_bDragRot = false;
+					(*m_CurSelectedActor)->rot = m_fOldRot;
+				}
 			}
             break;
 
@@ -275,6 +295,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             {
 				m_bConstrainX = m_bConstrainY = false;
 				m_bDragPos = false;
+				m_bPanScreen = false;
             }
 			else if(event.button.button == SDL_BUTTON_RIGHT)
 			{
