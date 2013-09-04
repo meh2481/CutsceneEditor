@@ -14,7 +14,6 @@ obj::obj()
   rot = 0.0f;
   usr = NULL;
   parent = NULL;
-  bIsChild = false;
   parent = NULL;
 }
 
@@ -26,7 +25,7 @@ obj::~obj()
 
 void obj::draw(bool bChildDraw)
 {
-	if(bIsChild && !bChildDraw)
+	if(parent != NULL && !bChildDraw)
 		return;
 	glColor4f(col.r,col.g,col.b,col.a);
 	glPushMatrix();
@@ -49,12 +48,14 @@ void obj::addSegment(physSegment* seg)
 
 void obj::addChild(obj* object, bool bOffset)
 {
-	if(object->bIsChild)
-		return;	//Don't make this a child if it already is
-	object->bIsChild = true;
+	if(object->parent != NULL)
+		return;	//Don't make this a child if it already is a child of another object
 	object->parent = this;
 	if(bOffset)
 	{
+		//obj* toplevel;
+		//for(toplevel = object; toplevel->parent != NULL; toplevel = toplevel->parent)
+		//	;
 		for(obj* o = this; o != NULL; o = o->parent)
 		{
 			object->pos.x -= o->pos.x;
@@ -78,6 +79,32 @@ Point obj::getPos()
 		p.y = ynew + o->pos.y;	//Keep same position as before by factoring in parent locations
 	}
 	return p;
+}
+
+float32 obj::getRot()
+{
+	float32 f = 0;
+	for(obj* o = this; o != NULL; o = o->parent)
+		f += o->rot;
+	return f;
+}
+
+void obj::removeParenting()
+{
+	if(parent == NULL)
+		return;	//No parents already
+	pos = getPos();	//Reset position
+	rot = getRot();
+	
+	for(list<obj*>::iterator i = parent->children.begin(); i != parent->children.end(); i++)
+	{
+		if(*i == this)
+		{
+			parent->children.erase(i);
+			break;	//Done
+		}
+	}
+	parent = NULL;
 }
 
 //----------------------------------------------------------------------------------------------------

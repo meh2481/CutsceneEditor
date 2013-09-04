@@ -37,8 +37,6 @@ public:
 class obj
 {
 public:
-	bool bIsChild;	//If this is a child of another object
-	
     list<physSegment*> segments;
     list<obj*> children;
     
@@ -55,6 +53,8 @@ public:
     void addSegment(physSegment* seg);
     void addChild(obj* object, bool bOffset = true);	//bOffset = factor in location of this object and calculate offset
 	Point getPos();	//Get position with parents' positions factored in
+	float32 getRot();	//Get rotation with parents' rotations factored in
+	void removeParenting();	//Remove this object from its parents so it stands alone
     
 
 };

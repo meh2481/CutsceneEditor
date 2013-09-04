@@ -199,6 +199,14 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 							(*m_CurSelectedParent)->addChild(*m_CurSelectedActor);	//This automatically tests for duplication
 						}
 					}
+					else if(keyDown(SDLK_LALT) || keyDown(SDLK_RALT))
+					{
+						//Remove parent
+						if(m_CurSelectedActor != m_lActors.end())
+						{
+							(*m_CurSelectedActor)->removeParenting();
+						}
+					}
 					else	//Set to be parent
 					{
 						if(m_CurSelectedParent == m_CurSelectedActor)
@@ -408,7 +416,7 @@ void CutsceneEngine::drawActors()
 		else
 			glColor4f(0.0,1.0,0.0,1.0);
 		glTranslatef((*i)->getPos().x, 0.0f, (*i)->getPos().y);
-		glRotatef((*i)->rot*RAD2DEG, 0.0f, 1.0f, 0.0f);
+		glRotatef((*i)->getRot()*RAD2DEG, 0.0f, 1.0f, 0.0f);
 		glScalef(0.07f, 0.07f, 0.07f);
 		glDisable(GL_LIGHTING);
 		m_centerDraw->render();
@@ -457,7 +465,7 @@ void CutsceneEngine::save(string sFilename)
 	//Write actors
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
-		if(!((*i)->bIsChild))	//Only write toplevel if not a child of another actor
+		if((*i)->parent == NULL)	//Only write toplevel if not a child of another actor
 			writeObject(*i, root, doc);
 	}
 	
