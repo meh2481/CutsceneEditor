@@ -53,16 +53,31 @@ void obj::addChild(obj* object, bool bOffset)
 	object->parent = this;
 	if(bOffset)
 	{
-		//obj* toplevel;
-		//for(toplevel = object; toplevel->parent != NULL; toplevel = toplevel->parent)
-		//	;
-		for(obj* o = this; o != NULL; o = o->parent)
+		//Start from the top of the parenting tree and work down (Slightly convoluted because of the way we handle parenting)
+		for(obj* toplevel = NULL; toplevel != this;)
 		{
+			//Go to next item on top
+			obj* o;
+			for(o = object; o->parent != toplevel; o = o->parent)
+				;
+			toplevel = o;
+			
+			//Translate back first
 			object->pos.x -= o->pos.x;
-			object->pos.y -= o->pos.y;	//Keep same position as before by factoring in parent locations
+			object->pos.y -= o->pos.y;
+	
+			//Then rotate point backwards
+			float xnew = object->pos.x * cos(o->rot) - object->pos.y * sin(o->rot);
+			float ynew = object->pos.x * sin(o->rot) + object->pos.y * cos(o->rot);
+
+			object->pos.x = xnew;
+			object->pos.y = ynew;
+			
+			//Rotate the object back the amount the parent rotated it
+			object->rot -= o->rot;
+			
 		}
 	}
-	//TODO: Take rotation into account
 	children.push_back(object);
 }
 
