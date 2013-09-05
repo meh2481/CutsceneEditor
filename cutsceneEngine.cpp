@@ -69,10 +69,10 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 	arcImg = new Image("res/images/arc.png");
 	arc* a = new arc(60, arcImg);
 	a->depth = 0.1298f;	//TODO: Load/save from XML
-	a->p1.x = -1.5149;
-	a->p1.y = -0.063386;
-	a->p2.x = 1.42543;
-	a->p2.y = 0.3533;
+	//a->p1.x = -1.5149;
+	//a->p1.y = -0.063386;
+	//a->p2.x = 1.42543;
+	//a->p2.y = 0.3533;
 	a->avg = 3;
 	a->add = 0.05;
 	a->max = 0.1;
@@ -81,15 +81,17 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 	
 	a = new arc(60, arcImg);
 	a->depth = 0.1298f;
-	a->p1.x = -1.51991;
-	a->p1.y = 0.361338;
-	a->p2.x = 1.42782;
-	a->p2.y = -0.0966953;
+	//a->p1.x = -1.51991;
+	//a->p1.y = 0.361338;
+	//a->p2.x = 1.42782;
+	//a->p2.y = -0.0966953;
 	a->avg = 3;
 	a->add = 0.05;
 	a->max = 0.1;
 	a->height = 0.05;
 	m_lArcs.push_back(a);
+	
+	m_CurSelectedArc = m_lArcs.end();
 }
 
 CutsceneEngine::~CutsceneEngine()
@@ -140,7 +142,12 @@ void CutsceneEngine::draw()
 	glLoadIdentity();
 	glTranslatef(CameraPos.x, CameraPos.y, CameraPos.z);
 	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
+	{
+		if(m_CurSelectedArc == i)
+			(*i)->col.set(selectionPulse.r, selectionPulse.g, selectionPulse.b, selectionPulse.a);
 		(*i)->render();
+		(*i)->col.clear();
+	}
 		
 	//TODO: Draw HUD and such
 	glLoadIdentity();
@@ -265,6 +272,35 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					if(m_CurSelectedActor != m_lActors.end())
 					{
 						cout << "Pos: " << (*m_CurSelectedActor)->getPos().x << ", " << (*m_CurSelectedActor)->getPos().y << endl;
+					}
+					break;
+				
+				//Dealing with arcs
+				case SDLK_EQUALS:
+					if(m_CurSelectedArc == m_lArcs.end())
+						m_CurSelectedArc = m_lArcs.begin();
+					else
+						m_CurSelectedArc++;
+					break;
+				
+				case SDLK_MINUS:
+					if(m_CurSelectedArc == m_lArcs.begin())
+						m_CurSelectedArc = m_lArcs.end();
+					else
+						m_CurSelectedArc--;
+					break;
+				
+				case SDLK_1:
+					if(m_CurSelectedArc != m_lArcs.end() && m_CurSelectedActor != m_lActors.end())
+					{
+						(*m_CurSelectedArc)->obj1 = *m_CurSelectedActor;
+					}
+					break;
+					
+				case SDLK_2:
+					if(m_CurSelectedArc != m_lArcs.end() && m_CurSelectedActor != m_lActors.end())
+					{
+						(*m_CurSelectedArc)->obj2 = *m_CurSelectedActor;
 					}
 					break;
 					

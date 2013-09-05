@@ -8,6 +8,7 @@
 
 #include "globaldefs.h"
 #include "Image.h"
+#include "Object.h"
 
 class arc
 {
@@ -20,7 +21,7 @@ protected:
 	void average();	//Helper function to average the values for a less jittery arc
 	
 public:
-	Point p1, p2;
+	obj* obj1, *obj2;
 	float32 depth;
 	Color col;
 	float32 add;

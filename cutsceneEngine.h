@@ -21,6 +21,7 @@ private:
   Vec3 CameraPos;
   list<obj*>::iterator m_CurSelectedActor;
   list<obj*>::iterator m_CurSelectedParent;
+  list<arc*>::iterator m_CurSelectedArc;
   Color selectionPulse;
   Color parentPulse;
   Object3D* m_centerDraw;	//For drawing objects' centers

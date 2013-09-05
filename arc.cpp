@@ -12,7 +12,7 @@ arc::arc(uint8_t number, Image* img)
 	numSegments = number;
 	segmentPos = (float*)malloc(sizeof(float)*numSegments);
 	arcSegImg = img;
-	p1.x = p1.y = p2.x = p2.y = 0.0f;
+	obj1 = obj2 = NULL;
 	add = max = 0.0f;
 	avg = 2;
 	height = 0.1;
@@ -26,6 +26,16 @@ arc::~arc()
 
 void arc::render()
 {
+	Point p1, p2;
+	if(obj1 == NULL)
+		p1.x = p1.y = 1;
+	else
+		p1 = obj1->getPos();
+	if(obj2 == NULL)
+		p2.x = p2.y = -1;
+	else
+		p2 = obj2->getPos();
+	glColor4f(col.r,col.g,col.b,col.a);
 	//Offset according to depth
 	glPushMatrix();
 	glTranslatef(p1.x, -p1.y - height / 2.0, depth);
@@ -48,6 +58,7 @@ void arc::render()
     }
 	
 	glPopMatrix();
+	glColor4f(1.0,1.0,1.0,1.0);
 }
 
 void arc::update(float dt)
@@ -86,26 +97,12 @@ void arc::average()
 	for(int i = 1; i < numSegments-1; i++)
     {
       float fTot = 0.0;
-	  float fNum = 0.0;
       for(int j = i-avg; j < i+avg+1; j++)
       {
 		if(j > 0 && j < numSegments)
-		{
 			fTot += segmentPos[j];
-			fNum++;
-		}
-		else if(j < 0)
-		{
-			fTot += segmentPos[0];
-			fNum++;
-		}
-		else if(j >= numSegments)
-		{
-			fTot += segmentPos[numSegments-1];
-			fNum++;
-		}
 	  }
-      temp[i] = fTot / fNum;
+      temp[i] = fTot / (float32)(avg*2+1);
     }
 	
 	//Copy back over
