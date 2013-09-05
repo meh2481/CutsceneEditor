@@ -243,13 +243,6 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 							m_CurSelectedParent = m_CurSelectedActor;
 					}
 					break;
-					
-				case SDLK_d: 	//Debug stuff
-					if(m_CurSelectedActor != m_lActors.end())
-					{
-						cout << "Pos: " << (*m_CurSelectedActor)->getPos().x << ", " << (*m_CurSelectedActor)->getPos().y << endl;
-					}
-					break;
 				
 				//Dealing with arcs
 				case SDLK_EQUALS:
@@ -616,18 +609,18 @@ void CutsceneEngine::load(string sFilename)
 		
 		if(arcelem->QueryUnsignedAttribute("num", &number) != XML_NO_ERROR)
 		{
-			cout << "Arc has no num" << endl;
+			errlog << "Arc has no num" << endl;
 			continue;	//Ignore
 		}
 		if(number < 2)
 		{
-			cout << "Arc num < 2" << endl;
+			errlog << "Arc num < 2" << endl;
 			continue;	//Ignore if ludicrously low resolution
 		}
 		const char* cImg = arcelem->Attribute("img");
 		if(cImg == NULL)
 		{
-			cout << "Arc img null" << endl;
+			errlog << "Arc img null" << endl;
 			continue;	//Ignore
 		}
 		
@@ -649,7 +642,6 @@ void CutsceneEngine::load(string sFilename)
 		if(cObj1 != NULL)	//See if we can find object with this name
 		{
 			string sObj1 = cObj1;
-			//cout << "sobj1: " << sObj1 << endl;
 			for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)	//O(n), I know
 			{
 				if((*i)->usr != NULL)
@@ -666,7 +658,6 @@ void CutsceneEngine::load(string sFilename)
 		if(cObj2 != NULL)
 		{
 			string sObj2 = cObj2;
-			//cout << "sobj2: " << sObj2 << endl;
 			for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)	//O(n), I know
 			{
 				if((*i)->usr != NULL)
@@ -686,11 +677,7 @@ void CutsceneEngine::load(string sFilename)
 	
 	//Clear user data from objects
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
-	{
-		//if((*i)->usr != NULL)
-		//	cout << "Actor id: " << (char*)(*i)->usr << endl;
 		(*i)->usr = NULL;
-	}
 	
 	delete doc;
 }

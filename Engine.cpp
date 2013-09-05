@@ -35,7 +35,7 @@ bool Engine::_frame()
 			if(m_bResizable)
 				changeScreenResolution(event.resize.w, event.resize.h);
 			else
-				cout << "Error! Resize event generated, but resizable flag not set." << endl;
+				errlog << "Error! Resize event generated, but resizable flag not set." << endl;
 		}
         handleEvent(event);
         if(event.type == SDL_QUIT)
@@ -370,7 +370,7 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	SDL_VERSION(&info.version);
 	if(SDL_GetWMInfo(&info) == -1) 
 	{
-		cout << "SDL_GetWMInfo #1 failed" << endl;
+		errlog << "SDL_GetWMInfo #1 failed" << endl;
 		return;
 	}
 
@@ -381,7 +381,7 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	HGLRC tempRC = wglCreateContext(tempDC);
 	if(tempRC == NULL) 
 	{
-		cout << "wglCreateContext failed" << endl;
+		errlog << "wglCreateContext failed" << endl;
 		return;
 	}
 
@@ -389,7 +389,7 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	SetLastError(0);
 	if(!wglShareLists(info.hglrc, tempRC))
 	{
-		cout << "wglShareLists #1 failed" << endl;
+		errlog << "wglShareLists #1 failed" << endl;
 		return;
 	}
 #endif
@@ -421,21 +421,21 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	SDL_VERSION(&info.version);
 	if(SDL_GetWMInfo(&info) == -1) 
 	{
-		cout << "SDL_GetWMInfo #2 failed" << endl;
+		errlog << "SDL_GetWMInfo #2 failed" << endl;
 		return;
 	}
  
 	//share resources to new SDL-created context
 	if(!wglShareLists(tempRC, info.hglrc))
 	{
-		cout << "wglShareLists #2 failed" << endl;
+		errlog << "wglShareLists #2 failed" << endl;
 		return;
 	}
  
 	//we no longer need our temporary context
 	if(!wglDeleteContext(tempRC))
 	{
-		cout << "wglDeleteContext failed" << endl;
+		errlog << "wglDeleteContext failed" << endl;
 		return;
 	}
 #else
@@ -515,7 +515,7 @@ bool Engine::getCursorDown(int iButtonCode)
 		case MMB:
 			return(ms & SDL_BUTTON(SDL_BUTTON_MIDDLE));
 		default:
-			cout << "Unsupported mouse code: " << iButtonCode << endl;
+			errlog << "Unsupported mouse code: " << iButtonCode << endl;
 			break;
 	}
 	return false;

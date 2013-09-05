@@ -197,7 +197,7 @@ void Object3D::fromTiny3DFile(string sFilename)
 	FILE* fp = fopen(sFilename.c_str(), "rb");
 	if(fp == NULL)
 	{
-		cout << "Error: Input tiny3d file " << sFilename << " does not exist." << endl;
+		errlog << "Error: Input tiny3d file " << sFilename << " does not exist." << endl;
 		return;
 	}
 	
@@ -205,7 +205,7 @@ void Object3D::fromTiny3DFile(string sFilename)
 	tiny3dHeader header;
 	if(fread(&header, 1, sizeof(tiny3dHeader), fp) != sizeof(tiny3dHeader))
 	{
-		cout << "Error: Unable to read in tiny3d header from file " << sFilename << endl;
+		errlog << "Error: Unable to read in tiny3d header from file " << sFilename << endl;
 		fclose(fp);
 		return;
 	}
@@ -214,7 +214,7 @@ void Object3D::fromTiny3DFile(string sFilename)
 	normal* normals = (normal*)malloc(sizeof(normal) * header.numNormals);
 	if(fread(normals, 1, sizeof(normal)*header.numNormals, fp) != sizeof(normal) * header.numNormals)
 	{
-		cout << "Error: Unable to read normals from tiny3d file " << sFilename << endl;
+		errlog << "Error: Unable to read normals from tiny3d file " << sFilename << endl;
 		fclose(fp);
 		return;
 	}
@@ -223,7 +223,7 @@ void Object3D::fromTiny3DFile(string sFilename)
 	uv* uvs = (uv*)malloc(sizeof(uv) * header.numUVs);
 	if(fread(uvs, 1, sizeof(uv)*header.numUVs, fp) != sizeof(uv) * header.numUVs)
 	{
-		cout << "Error: Unable to read UVs from tiny3d file " << sFilename << endl;
+		errlog << "Error: Unable to read UVs from tiny3d file " << sFilename << endl;
 		fclose(fp);
 		return;
 	}
@@ -232,7 +232,7 @@ void Object3D::fromTiny3DFile(string sFilename)
 	vert* vertices = (vert*)malloc(sizeof(vert) * header.numVertices);
 	if(fread(vertices, 1, sizeof(vert)*header.numVertices, fp) != sizeof(vert) * header.numVertices)
 	{
-		cout << "Error: Unable to read vertices from tiny3d file " << sFilename << endl;
+		errlog << "Error: Unable to read vertices from tiny3d file " << sFilename << endl;
 		fclose(fp);
 		return;
 	}
@@ -241,7 +241,7 @@ void Object3D::fromTiny3DFile(string sFilename)
 	face* faces = (face*)malloc(sizeof(face) * header.numFaces);
 	if(fread(faces, 1, sizeof(face)*header.numFaces, fp) != sizeof(face) * header.numFaces)
 	{
-		cout << "Error: Unable to read faces from tiny3d file " << sFilename << endl;
+		errlog << "Error: Unable to read faces from tiny3d file " << sFilename << endl;
 		fclose(fp);
 		return;
 	}
