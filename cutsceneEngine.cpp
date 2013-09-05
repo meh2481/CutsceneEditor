@@ -71,12 +71,24 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 	a->depth = 0.1298f;	//TODO: Load/save from XML
 	a->p1.x = -1.5149;
 	a->p1.y = -0.063386;
+	a->p2.x = 1.42543;
+	a->p2.y = 0.3533;
+	a->avg = 3;
+	a->add = 0.05;
+	a->max = 0.1;
+	a->height = 0.05;
+	m_lArcs.push_back(a);
+	
+	a = new arc(60, arcImg);
+	a->depth = 0.1298f;
+	a->p1.x = -1.51991;
+	a->p1.y = 0.361338;
 	a->p2.x = 1.42782;
 	a->p2.y = -0.0966953;
 	a->avg = 3;
-	a->height = 0.1;
 	a->add = 0.05;
 	a->max = 0.1;
+	a->height = 0.05;
 	m_lArcs.push_back(a);
 }
 

@@ -31,10 +31,9 @@ void arc::render()
 	glTranslatef(p1.x, -p1.y - height / 2.0, depth);
 	
 	//TODO: Calculate angle between two points and offset accordingly
-	float32 fDistance = sqrt((p2.x-p1.x)*(p2.x-p1.x) - (p2.y-p1.y)*(p2.y-p1.y));	//Grahh slow
+	float32 fDistance = sqrt((p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y));	//Grahh slow
 	float32 fAngle = -atan2((p2.y-p1.y),(p2.x-p1.x));
 	glRotatef(RAD2DEG*fAngle,0.0f,0.0f,1.0f);
-	//glScalef(1.0f,1.0f,1.0f);
 	float32 fSegWidth = fDistance / (float32)(numSegments-1);
     for(int i = 0; i < numSegments-1; i++)
     {
@@ -93,6 +92,16 @@ void arc::average()
 		if(j > 0 && j < numSegments)
 		{
 			fTot += segmentPos[j];
+			fNum++;
+		}
+		else if(j < 0)
+		{
+			fTot += segmentPos[0];
+			fNum++;
+		}
+		else if(j >= numSegments)
+		{
+			fTot += segmentPos[numSegments-1];
 			fNum++;
 		}
 	  }
