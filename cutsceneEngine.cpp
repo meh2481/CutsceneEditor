@@ -22,7 +22,7 @@ void fillRect(Rect rc, uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
     g_pGlobalEngine->fillRect(rc, red, green, blue, alpha);
 }
 
-CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle) : Engine(iWidth, iHeight, sTitle)
+CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable) : Engine(iWidth, iHeight, sTitle, bResizable)
 {
 	g_pGlobalEngine = this;
 	vfs.Prepare();
@@ -186,6 +186,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					break;
 					
 				case SDLK_DELETE:	//Erase objects
+					//TODO: Broken. Why?
 					if(m_CurSelectedActor != m_lActors.end())
 					{
 						delete (*m_CurSelectedActor);

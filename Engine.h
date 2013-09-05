@@ -44,10 +44,10 @@ private:
     float32 m_fTargetTime;
     map<string, Image*> m_mImages;  //Image handler
 	//TODO: Sound handler
-    map<string, string> m_mSoundNames; //And names of sounds
+    //map<string, string> m_mSoundNames; //And names of sounds
     list<Interpolate*> m_lInterpolations;  //Keep track of stuff that's interpolating
-    bool m_bFirstMusic; //Don't stop a previous song playing if there is none
-    string m_sLastMusic;    //Last song we played, so we can pause/resume songs instead of restarting them
+    //bool m_bFirstMusic; //Don't stop a previous song playing if there is none
+    //string m_sLastMusic;    //Last song we played, so we can pause/resume songs instead of restarting them
     bool m_bQuitting;   //Stop the game if this turns true
     uint16_t m_iImgScaleFac;    //How much images are scaled up by
     uint16_t m_iWidth, m_iHeight;
@@ -55,6 +55,7 @@ private:
     SDL_Rect** m_rcScreenModes; //Screen modes that are available
     int m_iNumScreenModes;      //Number of screen modes that are available
     bool m_bFullscreen;
+	bool m_bResizable;
     float32 m_fLastCycle;     //When the last cycle was
 
     //Engine-use function definitions
@@ -77,7 +78,7 @@ protected:
 
 public:
     //Constructor/destructor
-    Engine(uint16_t iWidth, uint16_t iHeight, string sTitle);
+    Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable = false);
     ~Engine();
 
     //Methods

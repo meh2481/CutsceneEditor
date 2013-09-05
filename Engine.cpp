@@ -4,6 +4,7 @@
 */
 
 #include "Engine.h"
+#include <SDL/SDL_syswm.h>
 ofstream errlog("err.log");
 
 
@@ -29,6 +30,13 @@ bool Engine::_frame()
             m_ptCursorPos.x = event.motion.x;
             m_ptCursorPos.y = event.motion.y;
         }
+		else if(event.type == SDL_VIDEORESIZE)
+		{
+			if(m_bResizable)
+				changeScreenResolution(event.resize.w, event.resize.h);
+			else
+				cout << "Error! Resize event generated, but resizable flag not set." << endl;
+		}
         handleEvent(event);
         if(event.type == SDL_QUIT)
             return true;
@@ -75,9 +83,10 @@ void Engine::_render()
     SDL_GL_SwapBuffers();
 }
 
-Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle)
+Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable)
 {
 	m_sTitle = sTitle;
+	m_bResizable = bResizable;
     b2Vec2 gravity(0.0, 9.8);  //Vector for our world's gravity
     m_physicsWorld = new b2World(gravity);
     m_ptCursorPos.SetZero();
@@ -93,7 +102,7 @@ Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle)
     //Initialize engine stuff
     setFramerate(60);   //60 fps default
     m_fAccumulatedTime = 0.0;
-    m_bFirstMusic = true;
+    //m_bFirstMusic = true;
     m_bQuitting = false;
     srand(SDL_GetTicks());  //Not as random as it could be... narf
     m_iImgScaleFac = 0;
@@ -178,7 +187,7 @@ Image* Engine::getImage(string sFilename)
 
 void Engine::createSound(string sPath, string sName)
 {
-    m_mSoundNames[sName] = sPath;
+    //TODO
 }
 
 void Engine::playSound(string sName, int volume, int pan, float32 pitch)
@@ -286,7 +295,10 @@ void Engine::setup_sdl()
   }
   
   // Create SDL window
-  if(SDL_SetVideoMode(m_iWidth, m_iHeight, video->vfmt->BitsPerPixel, SDL_OPENGL) == 0)
+  Uint32 flags = SDL_OPENGL;
+  if(m_bResizable)
+	flags |= SDL_RESIZABLE;
+  if(SDL_SetVideoMode(m_iWidth, m_iHeight, video->vfmt->BitsPerPixel, flags) == 0)
   {
   	fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
     exit(1);
@@ -350,56 +362,95 @@ void Engine::setup_opengl()
 
 void Engine::changeScreenResolution(float32 w, float32 h)
 {
-  //TODO: Windoze has stuff for this, Mac/Linux ought to as well
-  screenDrawWidth = m_iWidth = w;
-  screenDrawHeight = m_iHeight = h;
-  const SDL_VideoInfo* video = SDL_GetVideoInfo();
-  if(video == NULL)
-  {
-  	fprintf(stderr, "Couldn't get video information: %s\n", SDL_GetError());
-    exit(1);
-  }
-  // Create SDL window
-  int flags = SDL_OPENGL;
-  if(m_bFullscreen)
-    flags |= SDL_FULLSCREEN;
-  if(SDL_SetVideoMode(m_iWidth, m_iHeight, video->vfmt->BitsPerPixel, flags) == 0)
-  {
-  	fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
-    exit(1);
-  }
-  //Set OpenGL back up
-  setup_opengl();
-  //Reload images
-  reloadImages();
-  //Reload 3D models
-  reload3DObjects();
+//In Windoze, we can copy the graphics memory to a new context, so we don't have to reload all our images and stuff
+#ifdef _WIN32
+	SDL_SysWMinfo info;
+ 
+	//get window handle from SDL
+	SDL_VERSION(&info.version);
+	if(SDL_GetWMInfo(&info) == -1) 
+	{
+		cout << "SDL_GetWMInfo #1 failed" << endl;
+		return;
+	}
+
+	//get device context handle
+	HDC tempDC = GetDC(info.window);
+
+	// create temporary context
+	HGLRC tempRC = wglCreateContext(tempDC);
+	if(tempRC == NULL) 
+	{
+		cout << "wglCreateContext failed" << endl;
+		return;
+	}
+
+	//share resources to temporary context
+	SetLastError(0);
+	if(!wglShareLists(info.hglrc, tempRC))
+	{
+		cout << "wglShareLists #1 failed" << endl;
+		return;
+	}
+#endif
+	
+	screenDrawWidth = m_iWidth = w;
+	screenDrawHeight = m_iHeight = h;
+	const SDL_VideoInfo* video = SDL_GetVideoInfo();
+	if(video == NULL)
+	{
+		fprintf(stderr, "Couldn't get video information: %s\n", SDL_GetError());
+		exit(1);
+	}
+	//Create SDL window
+	int flags = SDL_OPENGL;
+	if(m_bFullscreen)
+		flags |= SDL_FULLSCREEN;
+	if(m_bResizable)
+		flags |= SDL_RESIZABLE;
+	if(SDL_SetVideoMode(m_iWidth, m_iHeight, video->vfmt->BitsPerPixel, flags) == 0)
+	{
+		fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
+		exit(1);
+	}
+	//Set OpenGL back up
+	setup_opengl();
+	
+#ifdef _WIN32
+	//previously used structure may possibly be invalid, to be sure we get it again
+	SDL_VERSION(&info.version);
+	if(SDL_GetWMInfo(&info) == -1) 
+	{
+		cout << "SDL_GetWMInfo #2 failed" << endl;
+		return;
+	}
+ 
+	//share resources to new SDL-created context
+	if(!wglShareLists(tempRC, info.hglrc))
+	{
+		cout << "wglShareLists #2 failed" << endl;
+		return;
+	}
+ 
+	//we no longer need our temporary context
+	if(!wglDeleteContext(tempRC))
+	{
+		cout << "wglDeleteContext failed" << endl;
+		return;
+	}
+#else
+	//TODO: Linux supposedly does this for us. Does Mac as well?
+	//Reload images
+	reloadImages();
+	//Reload 3D models
+	reload3DObjects();
+#endif
 }
 
 void Engine::toggleFullscreen()
 {
   m_bFullscreen = !m_bFullscreen;
-  const SDL_VideoInfo* video = SDL_GetVideoInfo();
-  if(video == NULL)
-  {
-  	fprintf(stderr, "Couldn't get video information: %s\n", SDL_GetError());
-    exit(1);
-  }
-  // Create SDL window
-  int flags = SDL_OPENGL;
-  if(m_bFullscreen)
-    flags |= SDL_FULLSCREEN;
-  if(SDL_SetVideoMode(m_iWidth, m_iHeight, video->vfmt->BitsPerPixel, flags) == 0)
-  {
-  	fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
-    exit(1);
-  }
-  //Set OpenGL back up
-  setup_opengl();
-  //Reload images
-  reloadImages();
-  //Reload 3D object memory
-  reload3DObjects();
+  changeScreenResolution(m_iWidth, m_iHeight);
 }
 
 list<resolution> Engine::getAvailableResolutions()
