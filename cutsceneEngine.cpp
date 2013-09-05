@@ -65,6 +65,19 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 	
 	m_bDragPos = m_bDragRot = m_bPanScreen = false;
 	m_bConstrainX = m_bConstrainY = false;
+	
+	arcImg = new Image("res/images/arc.png");
+	arc* a = new arc(60, arcImg);
+	a->depth = 0.1298f;	//TODO: Load/save from XML
+	a->p1.x = -1.5149;
+	a->p1.y = -0.063386;
+	a->p2.x = 1.42782;
+	a->p2.y = -0.0966953;
+	a->avg = 3;
+	a->height = 0.1;
+	a->add = 0.05;
+	a->max = 0.1;
+	m_lArcs.push_back(a);
 }
 
 CutsceneEngine::~CutsceneEngine()
@@ -73,8 +86,10 @@ CutsceneEngine::~CutsceneEngine()
 	save("res/editor.cutscene");	//Save our cutscene
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 		delete (*i);
-		
+	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
+		delete (*i);
 	delete m_centerDraw;
+	delete arcImg;
 }
 
 float32 CutsceneEngine::mouseScaleFac()
@@ -93,14 +108,32 @@ Point CutsceneEngine::getPannedMousePos()
 void CutsceneEngine::frame()
 {
     //updateObjects();    //Update the objects in the game
+	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
+		(*i)->update(1.0/30.0);
 }
 
 void CutsceneEngine::draw()
 {
+	//Draw 3D stuff
+	glEnable(GL_CULL_FACE);	//Only draw the front faces of objects (faster)
+	glEnable(GL_LIGHTING);
 	glLoadIdentity();
 	glTranslatef(CameraPos.x, CameraPos.y, CameraPos.z);
 	glRotatef(90.0f,1.0f,0.0f,0.0f);
-	drawActors();   
+	drawActors();
+	
+	//Draw 2D stuff
+	glDisable(GL_CULL_FACE);	//Only draw the front faces of objects (faster)
+	glDisable(GL_LIGHTING);
+	glLoadIdentity();
+	glTranslatef(CameraPos.x, CameraPos.y, CameraPos.z);
+	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
+		(*i)->render();
+		
+	//TODO: Draw HUD and such
+	glLoadIdentity();
+	glTranslatef(0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
+	//...
 }
 
 void CutsceneEngine::init(list<commandlineArg> sArgs)
@@ -213,6 +246,13 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 							m_CurSelectedParent = m_lActors.end();
 						else
 							m_CurSelectedParent = m_CurSelectedActor;
+					}
+					break;
+					
+				case SDLK_d: 	//Debug stuff
+					if(m_CurSelectedActor != m_lActors.end())
+					{
+						cout << "Pos: " << (*m_CurSelectedActor)->getPos().x << ", " << (*m_CurSelectedActor)->getPos().y << endl;
 					}
 					break;
 					

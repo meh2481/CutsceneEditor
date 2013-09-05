@@ -12,18 +12,20 @@
 class arc
 {
 protected:
-	float* pos;
+	float32* segmentPos;
 	Image* arcSegImg;
-	uint8_t num;
+	uint8_t numSegments;
 	
 	arc(){};
 	void average();	//Helper function to average the values for a less jittery arc
 	
 public:
 	Point p1, p2;
+	float32 depth;
 	Color col;
-	float add;
-	float max;
+	float32 add;
+	float32 max;
+	float32 height;
 	uint8_t avg;
 	
 	arc(uint8_t number, Image* img);

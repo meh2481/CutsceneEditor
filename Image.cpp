@@ -210,29 +210,20 @@ void Image::draw4V(Point ul, Point ur, Point bl, Point br)
 	else
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
   
-  
-  int32_t w, h;
-#ifdef __APPLE__
-  w = m_iRealWidth;
-  h = m_iRealHeight;
-#else
-  w = m_iWidth;
-  h = m_iHeight;
-#endif
   // make a rectangle
   glBegin(GL_QUADS);
   // top left
   glTexCoord2f(0.0f, 0.0f);
-  glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)ul.x/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)ul.y/(GLfloat)screenDrawHeight + 1.0, 0.0);
+  glVertex3f(ul.x, ul.y, 0.0);
   // bottom left
   glTexCoord2f(0.0f, 1.0f);
-  glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)bl.x/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)(bl.y)/(GLfloat)screenDrawHeight+1.0, 0.0);
+  glVertex3f(bl.x, bl.y, 0.0);
   // bottom right
   glTexCoord2f(1.0f, 1.0f);
-  glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(br.x)/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)(br.y)/(GLfloat)screenDrawHeight+1.0, 0.0);
+  glVertex3f(br.x, br.y, 0.0);
   // top right
   glTexCoord2f(1.0f, 0.0f);
-  glVertex3f((2.0*(float32)screenDrawWidth/(float32)screenDrawHeight)*((GLfloat)(ur.x)/(GLfloat)screenDrawWidth-0.5), -2.0*(GLfloat)ur.y/(GLfloat)screenDrawHeight+1.0, 0.0);
+  glVertex3f(ur.x, ur.y, 0.0);
   
   glEnd();
   

@@ -336,7 +336,6 @@ void Engine::setup_opengl()
     glLoadIdentity();
     glTranslatef( 0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
 	glPushMatrix();
-    glEnable(GL_CULL_FACE);	//Only draw the front faces of objects (faster)
 	
 	//Set up lighting
     glShadeModel(GL_SMOOTH);

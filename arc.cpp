@@ -7,38 +7,60 @@
 
 arc::arc(uint8_t number, Image* img)
 {
-	pos = NULL;
+	segmentPos = NULL;
 	if(img == NULL || number == 0) return;
-	num = number;
-	pos = (float*)malloc(sizeof(float)*num);
+	numSegments = number;
+	segmentPos = (float*)malloc(sizeof(float)*numSegments);
 	arcSegImg = img;
 	p1.x = p1.y = p2.x = p2.y = 0.0f;
-	add = 15.0;
-	max = 50.0;
+	add = max = 0.0f;
 	avg = 2;
+	height = 0.1;
 	init();
 }
 
 arc::~arc()
 {
-	free(pos);
+	free(segmentPos);
 }
 
 void arc::render()
 {
-	//Calculate angle between two points and offset accordingly
+	//Offset according to depth
+	glPushMatrix();
+	glTranslatef(p1.x, -p1.y - height / 2.0, depth);
+	
+	//TODO: Calculate angle between two points and offset accordingly
+	float32 fDistance = sqrt((p2.x-p1.x)*(p2.x-p1.x) - (p2.y-p1.y)*(p2.y-p1.y));	//Grahh slow
+	float32 fAngle = -atan2((p2.y-p1.y),(p2.x-p1.x));
+	glRotatef(RAD2DEG*fAngle,0.0f,0.0f,1.0f);
+	//glScalef(1.0f,1.0f,1.0f);
+	float32 fSegWidth = fDistance / (float32)(numSegments-1);
+    for(int i = 0; i < numSegments-1; i++)
+    {
+      Point ul, ur, bl, br;
+      ul.x = bl.x = (float32)i*fSegWidth;
+      ur.x = br.x = bl.x + fSegWidth;
+      ul.y = segmentPos[i];
+      bl.y = ul.y + height;
+      ur.y = segmentPos[i+1];
+      br.y = ur.y + height;
+      arcSegImg->draw4V(ul, ur, bl, br);
+    }
+	
+	glPopMatrix();
 }
 
 void arc::update(float dt)
 {
 	dt *= 60.0;
-	for(int i = 1; i < num-1; i++)
+	for(int i = 1; i < numSegments-1; i++)
 	{
-		pos[i] += dt*randFloat(-add, add);
-		if(pos[i] > max)
-			pos[i] = max;
-		if(pos[i] < -max)
-			pos[i] = -max;
+		segmentPos[i] += dt*randFloat(-add, add);
+		if(segmentPos[i] > max)
+			segmentPos[i] = max;
+		if(segmentPos[i] < -max)
+			segmentPos[i] = -max;
 	}
 	average();
 }
@@ -46,31 +68,31 @@ void arc::update(float dt)
 void arc::init()
 {
 	//Initialize values of array to sane defaults, so we don't start with a flat arc for one frame
-	for(int i = 0; i < num; i++)
-		pos[i] += randFloat(-max, max);
+	for(int i = 0; i < numSegments; i++)
+		segmentPos[i] += randFloat(-max, max);
 	average();
 }
 
 void arc::average()
 {
-	float* temp = (float*) malloc(sizeof(float)*num);
+	float* temp = (float*) malloc(sizeof(float)*numSegments);
 	
 	//Copy our array values into temporary storage to work off of
-	memcpy(temp, pos, sizeof(float)*num);
+	memcpy(temp, segmentPos, sizeof(float)*numSegments);
 	
 	//Center two end values
-	temp[0] = temp[num-1] = 0.0f;
+	temp[0] = temp[numSegments-1] = 0.0f;
 	
 	//Loop through, averaging values of all but two end values
-	for(int i = 1; i < num-1; i++)
+	for(int i = 1; i < numSegments-1; i++)
     {
       float fTot = 0.0;
 	  float fNum = 0.0;
       for(int j = i-avg; j < i+avg+1; j++)
       {
-		if(j > 0 && j < num)
+		if(j > 0 && j < numSegments)
 		{
-			fTot += pos[j];
+			fTot += segmentPos[j];
 			fNum++;
 		}
 	  }
@@ -78,7 +100,7 @@ void arc::average()
     }
 	
 	//Copy back over
-	memcpy(pos, temp, sizeof(float)*num);
+	memcpy(segmentPos, temp, sizeof(float)*numSegments);
 	free(temp);
 }
 

@@ -6,6 +6,7 @@
 #define CUTSCENEENGINE_H
 
 #include "Engine.h"
+#include "arc.h"
 #include <vector>
 
 #define SELECT_MIN_DISTANCE	0.3
@@ -14,6 +15,8 @@ class CutsceneEngine : public Engine
 {
 private:
   list<obj*> m_lActors;
+  list<arc*> m_lArcs;
+  Image* arcImg;
   ttvfs::VFSHelper vfs;
   Vec3 CameraPos;
   list<obj*>::iterator m_CurSelectedActor;

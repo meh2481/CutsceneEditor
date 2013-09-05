@@ -69,6 +69,16 @@ Color colorFromString(string s)
     return c;
 }
 
+Vec3 vec3FromString(string s)
+{
+	s = stripCommas(s);
+
+    Vec3 vec;
+    istringstream iss(s);
+    iss >> vec.x >> vec.y >> vec.z;
+    return vec;
+}
+
 //TODO Use actual random number generator (Mersenne Twister or such)
 int32_t randInt(int32_t min, int32_t max)
 {
@@ -84,6 +94,11 @@ float32 randFloat(float32 min, float32 max)
         return min;
     float32 scale = rand() % 1001;
     return((float32)scale/1000.0*(max-min) + min);
+}
+
+Vec3::Vec3()
+{
+	setZero();
 }
 
 void Vec3::normalize()

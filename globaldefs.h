@@ -64,6 +64,9 @@ class Vec3
 {
 public:
     float32 x, y, z;
+	
+	//Constructor
+	Vec3();
 
     void set(float32 fx, float32 fy, float32 fz)    {x=fx;y=fy;z=fz;};
     void setZero()  {set(0,0,0);};
@@ -74,6 +77,7 @@ public:
 
     //Operators for easy use
     bool operator!=(const Vec3& v);
+	
 };
 
 extern ofstream errlog;
@@ -86,6 +90,7 @@ string stripCommas(string s);       //Strip all the commas from s, leaving space
 Rect rectFromString(string s);      //Get a rectangle from comma-separated values in a string
 Point pointFromString(string s);    //Get a point from comma-separated values in a string
 Color colorFromString(string s);    //Get a color from comma-separated values in a string
+Vec3 vec3FromString(string s);		//Get a 3D point from comma-separated values in a string
 int32_t randInt(int32_t min, int32_t max);  //Get a random integer
 float32 randFloat(float32 min, float32 max);        //Get a random float32
 float32 distanceSquared(Vec3 vec1, Vec3 vec2);		//Get the distance between two vectors squared
