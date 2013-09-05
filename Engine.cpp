@@ -162,27 +162,18 @@ void Engine::fillRect(Rect rc, uint8_t red, uint8_t green, uint8_t blue, uint8_t
     fillRect(rc.left, rc.top, rc.right, rc.bottom, red, green, blue, alpha);
 }
 
-Image* Engine::getImage(string sName)
+Image* Engine::getImage(string sFilename)
 {
-    map<string, Image*>::iterator i = m_mImages.find(sName);
+    map<string, Image*>::iterator i = m_mImages.find(sFilename);
     if(i == m_mImages.end())   //This image isn't here; load it
     {
-        Image* img = new Image(m_mImageNames[sName]);   //Create this image
-        m_mImages[sName] = img; //Add to the map
-        img->_setID(m_mImages.size());   //For now, just numbering 0...n will work for an ID
+        Image* img = new Image(sFilename);   //Create this image
+        m_mImages[sFilename] = img; //Add to the map
+        //img->_setID(m_mImages.size());   //For now, just numbering 0...n will work for an ID
 		//TODO: What is an ID even good for?
         return img;
     }
     return i->second; //Return this image
-}
-
-void Engine::createImage(string sPath, string sName)
-{
-    m_mImageNames[sName] = sPath;
-	//Set to new path
-	map<string, Image*>::iterator i = m_mImages.find(sName);
-    if(i != m_mImages.end())
-		m_mImages[sName]->_setFilename(sPath);
 }
 
 void Engine::createSound(string sPath, string sName)

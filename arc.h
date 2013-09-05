@@ -15,7 +15,7 @@ class arc
 protected:
 	float32* segmentPos;
 	Image* arcSegImg;
-	uint8_t numSegments;
+	uint32_t numSegments;
 	
 	arc(){};
 	void average();	//Helper function to average the values for a less jittery arc
@@ -27,14 +27,18 @@ public:
 	float32 add;
 	float32 max;
 	float32 height;
-	uint8_t avg;
+	uint32_t avg;
 	
-	arc(uint8_t number, Image* img);
+	arc(uint32_t number, Image* img);
 	~arc();
 	
 	void init();
 	void render();
 	void update(float dt);
+	
+	//Accessor methods
+	string getImageFilename()	{return arcSegImg->getFilename();};
+	uint32_t getNumber()	{return numSegments;};
 	
 
 };

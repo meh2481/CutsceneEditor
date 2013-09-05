@@ -65,32 +65,7 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle)
 	
 	m_bDragPos = m_bDragRot = m_bPanScreen = false;
 	m_bConstrainX = m_bConstrainY = false;
-	
-	arcImg = new Image("res/images/arc.png");
-	arc* a = new arc(60, arcImg);
-	a->depth = 0.1298f;	//TODO: Load/save from XML
-	//a->p1.x = -1.5149;
-	//a->p1.y = -0.063386;
-	//a->p2.x = 1.42543;
-	//a->p2.y = 0.3533;
-	a->avg = 3;
-	a->add = 0.05;
-	a->max = 0.1;
-	a->height = 0.05;
-	m_lArcs.push_back(a);
-	
-	a = new arc(60, arcImg);
-	a->depth = 0.1298f;
-	//a->p1.x = -1.51991;
-	//a->p1.y = 0.361338;
-	//a->p2.x = 1.42782;
-	//a->p2.y = -0.0966953;
-	a->avg = 3;
-	a->add = 0.05;
-	a->max = 0.1;
-	a->height = 0.05;
-	m_lArcs.push_back(a);
-	
+		
 	m_CurSelectedArc = m_lArcs.end();
 }
 
@@ -550,6 +525,40 @@ void CutsceneEngine::save(string sFilename)
 	XMLDocument* doc = new XMLDocument;
 	XMLElement* root = doc->NewElement("cutscene");
 	
+	//Write arcs (First because they have to point to objects)
+	int CurArcLink = 0;
+	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
+	{
+		XMLElement* arc = doc->NewElement("arc");
+		arc->SetAttribute("num", (*i)->getNumber());
+		arc->SetAttribute("depth", (*i)->depth);
+		arc->SetAttribute("col", colorToString((*i)->col).c_str());
+		arc->SetAttribute("add", (*i)->add);
+		arc->SetAttribute("max", (*i)->max);
+		arc->SetAttribute("height", (*i)->height);
+		arc->SetAttribute("avg", (*i)->avg);
+		arc->SetAttribute("img", (*i)->getImageFilename().c_str());
+		if((*i)->obj1 != NULL)
+		{
+			if((*i)->obj1->usr == NULL)	//If this has a name already, use that
+			{
+				(*i)->obj1->usr = malloc(64);
+				sprintf((char*)((*i)->obj1->usr), "arc%d", ++CurArcLink);
+			}
+			arc->SetAttribute("obj1", (const char*)((*i)->obj1->usr));
+		}
+		if((*i)->obj2 != NULL)
+		{
+			if((*i)->obj2->usr == NULL)	//If this has a name already, use that
+			{
+				(*i)->obj2->usr = malloc(64);
+				sprintf((char*)((*i)->obj2->usr), "arc%d", ++CurArcLink);
+			}
+			arc->SetAttribute("obj2", (const char*)((*i)->obj2->usr));
+		}
+		root->InsertEndChild(arc);
+	}
+	
 	//Write actors
 	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
@@ -557,6 +566,13 @@ void CutsceneEngine::save(string sFilename)
 			writeObject(*i, root, doc);
 	}
 	
+	//Clear leftover user data from objects
+	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+	{
+		if((*i)->usr != NULL)
+			free((*i)->usr);
+		(*i)->usr = NULL;
+	}
 	
 	doc->InsertFirstChild(root);
 	doc->SaveFile(sFilename.c_str());
@@ -591,6 +607,91 @@ void CutsceneEngine::load(string sFilename)
 		readObject(object, actor);
 		m_lActors.push_back(object);
 	}
+	
+	//Load arcs (After we read in actors, so we know what objects these arcs are between)
+	for(XMLElement* arcelem = root->FirstChildElement("arc"); arcelem != NULL; arcelem = arcelem->NextSiblingElement("arc"))
+	{
+		uint32_t number = 0;
+		
+		if(arcelem->QueryUnsignedAttribute("num", &number) != XML_NO_ERROR)
+		{
+			cout << "Arc has no num" << endl;
+			continue;	//Ignore
+		}
+		if(number < 2)
+		{
+			cout << "Arc num < 2" << endl;
+			continue;	//Ignore if ludicrously low resolution
+		}
+		const char* cImg = arcelem->Attribute("img");
+		if(cImg == NULL)
+		{
+			cout << "Arc img null" << endl;
+			continue;	//Ignore
+		}
+		
+		arc* newarc = new arc(number, getImage(cImg));	//Create new arc from this filename and resolution
+		
+		//Get rest of arc info from XML, ignoring errors
+		arcelem->QueryFloatAttribute("depth", &newarc->depth);
+		arcelem->QueryFloatAttribute("add", &newarc->add);
+		arcelem->QueryFloatAttribute("max", &newarc->max);
+		arcelem->QueryFloatAttribute("height", &newarc->height);
+		arcelem->QueryUnsignedAttribute("avg", &newarc->avg);
+		const char* cCol = arcelem->Attribute("col");
+		if(cCol != NULL)
+			newarc->col = colorFromString(cCol);
+		
+		const char* cObj1 = arcelem->Attribute("obj1");
+		const char* cObj2 = arcelem->Attribute("obj2");
+		//Link up objects to arc elements if we can
+		if(cObj1 != NULL)	//See if we can find object with this name
+		{
+			string sObj1 = cObj1;
+			//cout << "sobj1: " << sObj1 << endl;
+			for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)	//O(n), I know
+			{
+				if((*i)->usr != NULL)
+				{
+					string s = (char*)((*i)->usr);
+					if(s == sObj1)
+					{
+						newarc->obj1 = *i;
+						break;
+					}
+				}
+			}
+		}
+		if(cObj2 != NULL)
+		{
+			string sObj2 = cObj2;
+			//cout << "sobj2: " << sObj2 << endl;
+			for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)	//O(n), I know
+			{
+				if((*i)->usr != NULL)
+				{
+					string s = (char*)((*i)->usr);
+					if(s == sObj2)
+					{
+						newarc->obj2 = *i;
+						break;
+					}
+				}
+			}
+		}
+		
+		m_lArcs.push_back(newarc);
+	}
+	
+	//Clear user data from objects
+	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+	{
+		//if((*i)->usr != NULL)
+		//	cout << "Actor id: " << (char*)(*i)->usr << endl;
+		(*i)->usr = NULL;
+	}
+	
+	delete doc;
 }
 
 void writeVec2(XMLElement* elem, string sAttributeName, Point vec)
@@ -604,15 +705,14 @@ void readVec2(XMLElement* elem, string sAttributeName, Point* vec)
 {
 	const char* cPos = elem->Attribute(sAttributeName.c_str());
 	if(cPos == NULL) return;
-	istringstream iss(cPos);
-	char cDiscard;
-	if(!(iss >> vec->x >> cDiscard >> vec->y))
-		vec->x = vec->y = 0.0f;
+	*vec = pointFromString(cPos);
 }
 
 void CutsceneEngine::writeObject(obj* object, XMLElement* parent, XMLDocument* doc)
 {
 	XMLElement* actor = doc->NewElement("actor");
+	if(object->usr != NULL)
+		actor->SetAttribute("id", (const char*)(object->usr));
 	writeVec2(actor, "pos", object->pos);
 	actor->SetAttribute("rot", object->rot);
 	
@@ -654,6 +754,9 @@ void CutsceneEngine::readObject(obj* object, XMLElement* actor)
 {
 	readVec2(actor, "pos", &(object->pos));
 	actor->QueryFloatAttribute("rot", &(object->rot));
+	
+	//Read user data
+	object->usr = (void*)actor->Attribute("id");
 	
 	//Read physics segments
 	for(XMLElement* segment = actor->FirstChildElement("segment"); segment != NULL; segment = segment->NextSiblingElement("segment"))

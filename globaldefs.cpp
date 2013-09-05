@@ -41,7 +41,8 @@ Rect rectFromString(string s)
     //Now, parse
     istringstream iss(s);
     Rect rc;
-    iss >> rc.left >> rc.top >> rc.right >> rc.bottom;
+    if(!(iss >> rc.left >> rc.top >> rc.right >> rc.bottom))
+		rc.set(0,0,0,0);
     return rc;
 }
 
@@ -52,7 +53,8 @@ Point pointFromString(string s)
     //Now, parse
     istringstream iss(s);
     Point pt;
-    iss >> pt.x >> pt.y;
+    if(!(iss >> pt.x >> pt.y))
+		pt.SetZero();
     return pt;
 }
 
@@ -61,12 +63,18 @@ Color colorFromString(string s)
     s = stripCommas(s);
 
     //Now, parse
-    float32 r,g,b,a;
+    Color c;
     istringstream iss(s);
-    iss >> r >> g >> b >> a;
-	Color c;
-	c.set(r,g,b,a);
+    if(!(iss >> c.r >> c.g >> c.b >> c.a))
+		c.clear();
     return c;
+}
+
+string colorToString(Color c)
+{
+	ostringstream oss;
+	oss << c.r << ", " << c.g << ", " << c.b << ", " << c.a;
+	return oss.str();
 }
 
 Vec3 vec3FromString(string s)
@@ -75,7 +83,8 @@ Vec3 vec3FromString(string s)
 
     Vec3 vec;
     istringstream iss(s);
-    iss >> vec.x >> vec.y >> vec.z;
+    if(!(iss >> vec.x >> vec.y >> vec.z))
+		vec.setZero();
     return vec;
 }
 

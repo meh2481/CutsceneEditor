@@ -5,7 +5,7 @@
 
 #include "arc.h"
 
-arc::arc(uint8_t number, Image* img)
+arc::arc(uint32_t number, Image* img)
 {
 	segmentPos = NULL;
 	if(img == NULL || number == 0) return;

@@ -43,7 +43,6 @@ private:
     float32 m_fAccumulatedTime;
     float32 m_fTargetTime;
     map<string, Image*> m_mImages;  //Image handler
-    map<string, string> m_mImageNames;  //And names of images
 	//TODO: Sound handler
     map<string, string> m_mSoundNames; //And names of sounds
     list<Interpolate*> m_lInterpolations;  //Keep track of stuff that's interpolating
@@ -87,8 +86,7 @@ public:
     void fillRect(Point p1, Point p2, uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha); //Fill the specified rect with the specified color
     void fillRect(float32 x1, float32 y1, float32 x2, float32 y2, uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha);
     void fillRect(Rect rc, uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha);
-    Image* getImage(string sName);  //Retrieves an image from the name
-    void createImage(string sPath, string sName); //Creates an image with this name from this file path
+    Image* getImage(string sFilename);  //Retrieves an image from the filename, creating it if necessary
     void createSound(string sPath, string sName);   //Creates a sound from this name and file path
     void clearImages();     //Free memory associated with the images in our image map
     virtual void playSound(string sName, int volume = 100, int pan = 0, float32 pitch = 1.0);     //Play a sound

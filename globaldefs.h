@@ -90,6 +90,7 @@ string stripCommas(string s);       //Strip all the commas from s, leaving space
 Rect rectFromString(string s);      //Get a rectangle from comma-separated values in a string
 Point pointFromString(string s);    //Get a point from comma-separated values in a string
 Color colorFromString(string s);    //Get a color from comma-separated values in a string
+string colorToString(Color c);
 Vec3 vec3FromString(string s);		//Get a 3D point from comma-separated values in a string
 int32_t randInt(int32_t min, int32_t max);  //Get a random integer
 float32 randFloat(float32 min, float32 max);        //Get a random float32
