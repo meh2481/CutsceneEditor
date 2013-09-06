@@ -10,7 +10,7 @@
 #include <fstream>
 using namespace std;
 #include "include/Box2D.h"
-#include "include/tinyxml2.h"
+#include "tinyxml2.h"
 using namespace tinyxml2;
 #include "include/VFS.h"
 #include "include/VFSTools.h"
