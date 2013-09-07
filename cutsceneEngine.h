@@ -34,6 +34,7 @@ private:
   bool m_bPanScreen;
   bool m_bConstrainX;
   bool m_bConstrainY;
+  bool m_bShowArcs;
 
 protected:
     void frame();
