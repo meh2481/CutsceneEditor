@@ -7,6 +7,19 @@
 
 #include "globaldefs.h"
 
+
+typedef struct 
+{
+	float32 value;
+	float32 time;
+} keyframe;
+
+typedef struct
+{
+	list<keyframe*> keyframes;
+	float32* item;
+} itemkeys;
+
 class Interpolate
 {
   Interpolate(){};

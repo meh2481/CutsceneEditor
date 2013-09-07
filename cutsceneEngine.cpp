@@ -69,9 +69,12 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle,
 		
 	m_CurSelectedArc = m_lArcs.end();
 	
-	m_text = new Text("res/text.xml");
+	m_text = new Text("res/font.xml");
 	m_fCurrentFrameTime = 0.0f;
 	m_bIsPlaying = false;
+	
+	m_hud = new HUD("hud");
+	m_hud->create("res/hud.xml");
 }
 
 CutsceneEngine::~CutsceneEngine()
@@ -84,6 +87,9 @@ CutsceneEngine::~CutsceneEngine()
 		delete (*i);
 	delete m_centerDraw;
 	delete arcImg;
+	m_hud->destroy();
+	delete m_hud;
+	delete m_text;
 }
 
 float32 CutsceneEngine::mouseScaleFac()
@@ -148,6 +154,7 @@ void CutsceneEngine::draw()
 		oss << "frame " << (int)(m_fPlayingTime / KEYFRAME_SIZE);
 	m_text->render(oss.str(), texPos);
 	//...
+	m_hud->draw(0);
 }
 
 void CutsceneEngine::init(list<commandlineArg> sArgs)
@@ -179,7 +186,7 @@ void CutsceneEngine::hudSignalHandler(string sSignal)
 
 void CutsceneEngine::handleEvent(SDL_Event event)
 {
-    //m_hud->event(event);    //Let our HUD handle any events it needs to
+    m_hud->event(event);    //Let our HUD handle any events it needs to
     switch(event.type)
     {
         //Key pressed

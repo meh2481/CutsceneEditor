@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hud name="editorhud">
+  <!-- Images and fonts must be declared first, before they're used -->
+  <images />
+  
+  <fonts >
+    <font name="normal" path="res/font.xml" />
+  </fonts>
+  
+  <!-- Order here matters. The background image needs to be first, and thus drawn first, before the text boxes and such -->
+  <textbox name="heartstotal" default="hai dood" pos="400,300" align="left,bottom" fill="0,0,0,0" font="normal" />
+  
+  <keyframebox name="keyframe" pos="0,0" width="screen" height="100" fill="0.349,0.6784,0.8902,1.0" col="1,1,1,1" /> 
+</hud>

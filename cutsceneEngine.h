@@ -12,18 +12,6 @@
 #define SELECT_MIN_DISTANCE	0.3
 #define KEYFRAME_SIZE	0.01666666666666666666666666666667
 
-typedef struct 
-{
-	float32 value;
-	float32 time;
-} keyframe;
-
-typedef struct
-{
-	list<keyframe*> keyframes;
-	float32* item;
-} itemkeys;
-
 typedef struct
 {
 	list<itemkeys*> items;
@@ -48,6 +36,8 @@ private:
   Text* m_text;
   bool m_bIsPlaying;
   float32 m_fPlayingTime;
+  
+  HUD* m_hud;
   
   //Editing helpers
   Point m_ptOldPos;

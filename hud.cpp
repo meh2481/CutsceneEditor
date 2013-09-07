@@ -6,6 +6,9 @@
 #include "hud.h"
 #include <sstream>
 
+extern int screenDrawWidth;
+extern int screenDrawHeight;
+
 //-------------------------------------------------------------------------------------
 // HUDItem class functions
 //-------------------------------------------------------------------------------------
@@ -249,6 +252,34 @@ void HUDGroup::event(SDL_Event event)
 }
 
 //-------------------------------------------------------------------------------------
+// HUDKeyframeBox class functions
+//-------------------------------------------------------------------------------------
+HUDKeyframeBox::HUDKeyframeBox(string sName) : HUDItem (sName)
+{
+	curItem = NULL;
+	size.SetZero();
+}
+
+HUDKeyframeBox::~HUDKeyframeBox()
+{
+}
+
+void HUDKeyframeBox::track(itemkeys* item)
+{
+	curItem = item;
+}
+
+void HUDKeyframeBox::draw(float32 fCurTime)
+{
+	HUDItem::draw(fCurTime);
+	
+	//Render keyframes and lines between
+	Rect rc;
+	rc.set(m_ptPos.x, m_ptPos.y, size.x, size.y);
+	fillRect(rc, fill.r*255, fill.g*255, fill.b*255, fill.a*255);
+}
+
+//-------------------------------------------------------------------------------------
 // HUD class functions
 //-------------------------------------------------------------------------------------
 HUD::HUD(string sName) : HUDItem(sName)
@@ -431,7 +462,45 @@ HUDItem* HUD::_getItem(XMLElement* elem)
         }
         return(tb);
     }
-    else
+    else if(sName == "keyframebox")
+	{
+		const char* cTextName = elem->Attribute("name");
+        if(cTextName == NULL) return NULL;
+        HUDKeyframeBox* kb = new HUDKeyframeBox(cTextName);
+		const char* cPos = elem->Attribute("pos");
+        if(cPos != NULL)
+        {
+            Point ptTextPos = pointFromString(cPos);
+            kb->setPos(ptTextPos);
+        }
+		const char* cFill = elem->Attribute("fill");
+        if(cFill != NULL)
+			kb->fill = colorFromString(cFill);
+		const char* cCol = elem->Attribute("col");
+        if(cCol != NULL)
+            kb->col = colorFromString(cCol);
+		const char* cWidth = elem->Attribute("width");
+		if(cWidth != NULL)
+		{
+			string s = cWidth;
+			if(s == "screen")
+				kb->size.x = screenDrawWidth;
+			else
+				elem->QueryFloatAttribute("width", &(kb->size.x)); 
+		}
+		const char* cHeight = elem->Attribute("height");
+		if(cHeight != NULL)
+		{
+			string s = cHeight;
+			if(s == "screen")
+				kb->size.y = screenDrawHeight;
+			else
+				elem->QueryFloatAttribute("height", &(kb->size.y)); 
+		}
+		return kb;
+		
+	}
+	else
         errlog << "Unknown HUD item \"" << sName << "\". Ignoring..." << endl;
     return NULL;
 }
@@ -440,10 +509,20 @@ void HUD::create(string sXMLFilename)
 {
     //Load in the XML document
     XMLDocument* doc = new XMLDocument();
-    doc->LoadFile(sXMLFilename.c_str());
+    int iErr = doc->LoadFile(sXMLFilename.c_str());
+	if(iErr != XML_NO_ERROR)
+	{
+		errlog << "Error parsing XML file " << sXMLFilename << ": Error " << iErr << endl;
+		delete doc;
+		return;
+	}
 
     XMLElement* elem = doc->FirstChildElement("hud");
-    if(elem == NULL) return;
+    if(elem == NULL)
+	{
+		errlog << "Error: No toplevel \"hud\" item in XML file " << sXMLFilename << endl;
+		return;
+	}
     const char* cName = elem->Attribute("name");
     if(cName != NULL)
         m_sName = cName;    //Grab the name

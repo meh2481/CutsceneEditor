@@ -9,6 +9,7 @@
 #include "globaldefs.h"
 #include "Image.h"
 #include "Text.h"
+#include "Interpolate.h"
 
 //Global functions for use with HUD objects
 inline void stubSignal(string sSignal){errlog << "Generating signal: " << sSignal << endl;}; //For stubbing out HUD signal handling functions
@@ -158,7 +159,22 @@ public:
     void destroy(); //Free memory associated with HUD items
 };
 
+class HUDKeyframeBox : public HUDItem
+{
+protected:
+	itemkeys* curItem;
+	
+public:
+	Point size;
+	Color fill;
 
+	HUDKeyframeBox(string sName);
+	~HUDKeyframeBox();
+	
+	void track(itemkeys* item);
+	virtual void    draw(float32 fCurTime);
+	
+};
 
 
 
