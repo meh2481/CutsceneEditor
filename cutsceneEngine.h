@@ -10,7 +10,7 @@
 #include <vector>
 
 #define SELECT_MIN_DISTANCE	0.3
-#define KEYFRAME_SIZE	1.0/60.0
+#define KEYFRAME_SIZE	0.01666666666666666666666666666667
 
 typedef struct 
 {
@@ -20,13 +20,13 @@ typedef struct
 
 typedef struct
 {
-	list<keyframe> keyframes;
+	list<keyframe*> keyframes;
 	float32* item;
 } itemkeys;
 
 typedef struct
 {
-	list<itemkeys> items;
+	list<itemkeys*> items;
 	obj* o;
 } keyobj;
 
@@ -44,7 +44,10 @@ private:
   Color selectionPulse;
   Color parentPulse;
   Object3D* m_centerDraw;	//For drawing objects' centers
+  float32 m_fCurrentFrameTime;
   Text* m_text;
+  bool m_bIsPlaying;
+  float32 m_fPlayingTime;
   
   //Editing helpers
   Point m_ptOldPos;
@@ -82,6 +85,7 @@ public:
 	void readObject(obj* object, XMLElement* actor);
 	
 	void changeFrame(float32 fTime);
+	void addFrame(keyobj* o, float32* pointer, float32 value, float32 fTime);	//Add a frame to this keyed object
 };
 
 void signalHandler(string sSignal); //Stub function for handling signals that come in from our HUD, and passing them on to myEngine

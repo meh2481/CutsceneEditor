@@ -70,12 +70,14 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle,
 	m_CurSelectedArc = m_lArcs.end();
 	
 	m_text = new Text("res/text.xml");
+	m_fCurrentFrameTime = 0.0f;
+	m_bIsPlaying = false;
 }
 
 CutsceneEngine::~CutsceneEngine()
 {
 	errlog << "~CutsceneEngine" << endl;
-	save("res/editor.cutscene");	//Save our cutscene
+	//save("res/editor.cutscene");	//Save our cutscene
 	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 		delete i->o;
 	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
@@ -102,6 +104,12 @@ void CutsceneEngine::frame()
     //updateObjects();    //Update the objects in the game
 	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
 		(*i)->update(1.0/30.0);
+		
+	if(m_bIsPlaying)
+	{
+		m_fPlayingTime += KEYFRAME_SIZE;
+		changeFrame(m_fPlayingTime);
+	}
 }
 
 void CutsceneEngine::draw()
@@ -131,6 +139,14 @@ void CutsceneEngine::draw()
 	//TODO: Draw HUD and such
 	glLoadIdentity();
 	glTranslatef(0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
+	Point texPos;
+	texPos.SetZero();
+	ostringstream oss;
+	if(!m_bIsPlaying)
+		oss << "frame " << (int)(m_fCurrentFrameTime / KEYFRAME_SIZE);
+	else
+		oss << "frame " << (int)(m_fPlayingTime / KEYFRAME_SIZE);
+	m_text->render(oss.str(), texPos);
 	//...
 }
 
@@ -239,6 +255,20 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 							m_CurSelectedActor->o->removeParenting();
 						}
 					}
+					else if(keyDown(SDLK_LSHIFT) || keyDown(SDLK_RSHIFT))	//Play animation
+					{
+						if(m_bIsPlaying)
+						{
+							changeFrame(m_fCurrentFrameTime);
+							m_bIsPlaying = false;
+						}
+						else
+						{
+							//Play animation
+							m_bIsPlaying = true;
+							m_fPlayingTime = m_fCurrentFrameTime;	//Start at current frame
+						}
+					}
 					else	//Set to be parent
 					{
 						if(m_CurSelectedParent == m_CurSelectedActor)
@@ -301,6 +331,51 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 						}
 					}
 					break;
+					
+				case SDLK_RIGHT:
+					if(m_bIsPlaying)
+					{
+						m_fCurrentFrameTime = m_fPlayingTime;
+						m_bIsPlaying = false;
+					}
+					m_fCurrentFrameTime += KEYFRAME_SIZE;
+					changeFrame(m_fCurrentFrameTime);
+					break;
+					
+				case SDLK_LEFT:
+					if(m_bIsPlaying)
+					{
+						m_fCurrentFrameTime = m_fPlayingTime;
+						m_bIsPlaying = false;
+					}
+					m_fCurrentFrameTime -= KEYFRAME_SIZE;
+					if(m_fCurrentFrameTime < 0)
+						m_fCurrentFrameTime = 0;
+					changeFrame(m_fCurrentFrameTime);
+					break;
+					
+				case SDLK_UP:
+					if(m_bIsPlaying)
+					{
+						m_fCurrentFrameTime = m_fPlayingTime;
+						m_bIsPlaying = false;
+					}
+					m_fCurrentFrameTime += KEYFRAME_SIZE * 10;
+					changeFrame(m_fCurrentFrameTime);
+					break;
+					
+				case SDLK_DOWN:
+					if(m_bIsPlaying)
+					{
+						m_fCurrentFrameTime = m_fPlayingTime;
+						m_bIsPlaying = false;
+					}
+					m_fCurrentFrameTime -= KEYFRAME_SIZE * 10;
+					if(m_fCurrentFrameTime < 0)
+						m_fCurrentFrameTime = 0;
+					changeFrame(m_fCurrentFrameTime);
+					break;
+					
 					
 					
               }
@@ -388,12 +463,21 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             if(event.button.button == SDL_BUTTON_LEFT)
             {
 				m_bConstrainX = m_bConstrainY = false;
-				m_bDragPos = false;
+				if(m_bDragPos)
+				{
+					m_bDragPos = false;
+					addFrame(&(*m_CurSelectedActor), &(m_CurSelectedActor->o->pos.x), m_CurSelectedActor->o->pos.x, m_fCurrentFrameTime);
+					addFrame(&(*m_CurSelectedActor), &(m_CurSelectedActor->o->pos.y), m_CurSelectedActor->o->pos.y, m_fCurrentFrameTime);
+				}
 				m_bPanScreen = false;
             }
 			else if(event.button.button == SDL_BUTTON_RIGHT)
 			{
-				m_bDragRot = false;
+				if(m_bDragRot)
+				{
+					m_bDragRot = false;
+					addFrame(&(*m_CurSelectedActor), &(m_CurSelectedActor->o->rot), m_CurSelectedActor->o->rot, m_fCurrentFrameTime);
+				}
 			}
 			else if(event.button.button == SDL_BUTTON_MIDDLE)
 			{
@@ -824,11 +908,100 @@ void CutsceneEngine::changeFrame(float32 fTime)
 {
 	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
-		
+		for(list<itemkeys*>::iterator j = i->items.begin(); j != i->items.end(); j++)
+		{
+			//Find the keyframes we're currently between or on
+			list<keyframe*>::iterator prev = (*j)->keyframes.end();
+			list<keyframe*>::iterator next = (*j)->keyframes.end();
+			for(list<keyframe*>::iterator k = (*j)->keyframes.begin(); k != (*j)->keyframes.end(); k++)
+			{
+				list<keyframe*>::iterator nextit = k;
+				nextit++;
+				if(nextit == (*j)->keyframes.end())
+				{
+					prev = k;
+					break;	//Done; hit end of list
+				}
+				if((*nextit)->time >= fTime)	//if the second keyframe is past where we are
+				{
+					prev = k;
+					if((*prev)->time >= fTime)	//If the first keyframe is also past where we are, this is the beginning of the list
+					{
+						next = k;
+						prev = (*j)->keyframes.end();
+						break;
+					}
+					prev = k;
+					next = nextit;
+					break;
+				}
+			}
+			if(prev == (*j)->keyframes.end() && next == (*j)->keyframes.end())
+			{
+				continue;	//No keyframes here; no interpolation to be done
+			}
+			else if(prev == (*j)->keyframes.end())	//Before first keyframe
+			{
+				*((*j)->item) = (*next)->value;
+			}
+			else if(next == (*j)->keyframes.end())	//After last keyframe
+			{
+				*((*j)->item) = (*prev)->value;
+			}
+			else	//Between two keyframes
+			{
+				//Linear interpolate: Grab slope of interpolation
+				float32 fTimeDiff = (*next)->time - (*prev)->time;
+				float32 fValDiff = (*next)->value - (*prev)->value;
+				//Multiply slope by time offset
+				*((*j)->item) = (fValDiff/fTimeDiff)*(fTime - (*prev)->time) + (*prev)->value;
+			}
+		}
 	}
 }
 
+void CutsceneEngine::addFrame(keyobj* o, float32* pointer, float32 value, float32 fTime)
+{
+	list<itemkeys*>::iterator key = o->items.end();
+	for(key = o->items.begin(); key != o->items.end(); key++)
+	{
+		if((*key)->item == pointer)	//If we've keyed this already
+			break;
+	}
 
+	if(key == o->items.end())
+	{
+		//We didn't find a keyframe list for this item; add it
+		itemkeys* ik = new itemkeys;
+		ik->item = pointer;
+		o->items.push_back(ik);	//IKR? HAHAHAHAHAHAHAHAHAHAHHA
+		key = o->items.end();
+		key--;
+	}
+	
+	//Insert this keyframe into the right spot
+	keyframe* kf = new keyframe;
+	kf->value = value;
+	kf->time = fTime;
+	
+	for(list<keyframe*>::iterator i = (*key)->keyframes.begin(); i != (*key)->keyframes.end(); i++)
+	{
+		if((*i)->time > kf->time)	//Went past last keyframe
+		{
+			(*key)->keyframes.insert(i, kf);
+			return;
+		}
+		else if((*i)->time == kf->time)	//Already a keyframe here; overwrite
+		{
+			(*i)->value = kf->value;
+			return;
+		}
+	}
+	
+	//This list has no keyframes; add this one
+	(*key)->keyframes.push_back(kf);
+	
+}
 
 
 
