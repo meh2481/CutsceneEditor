@@ -65,6 +65,7 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle,
 	
 	m_bDragPos = m_bDragRot = m_bPanScreen = false;
 	m_bConstrainX = m_bConstrainY = false;
+	m_bShowArcs = false;
 		
 	m_CurSelectedArc = m_lArcs.end();
 }
@@ -121,7 +122,8 @@ void CutsceneEngine::draw()
 		if(m_CurSelectedArc == i)
 			(*i)->col.set(selectionPulse.r, selectionPulse.g, selectionPulse.b, selectionPulse.a);
 		(*i)->render();
-		(*i)->col.clear();
+		if(m_CurSelectedArc == i)
+			(*i)->col.clear();
 	}
 		
 	//TODO: Draw HUD and such
@@ -270,6 +272,31 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					if(m_CurSelectedArc != m_lArcs.end() && m_CurSelectedActor != m_lActors.end())
 					{
 						(*m_CurSelectedArc)->obj2 = *m_CurSelectedActor;
+					}
+					break;
+				
+				case SDLK_a:
+					if(m_bShowArcs)
+					{
+						m_bShowArcs = false;
+						for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
+						{
+							Interpolate* inter = new Interpolate(&(*i)->col.a);
+							inter->setMinVal(0.0);
+							inter->calculateIncrement(0.0f,0.5f);
+							addInterpolation(inter);
+						}
+					}
+					else
+					{
+						m_bShowArcs = true;
+						for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
+						{
+							Interpolate* inter = new Interpolate(&(*i)->col.a);
+							inter->setMaxVal(1.0);
+							inter->calculateIncrement(1.0f,0.5f);
+							addInterpolation(inter);
+						}
 					}
 					break;
 					
