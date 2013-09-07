@@ -10,21 +10,41 @@
 #include <vector>
 
 #define SELECT_MIN_DISTANCE	0.3
+#define KEYFRAME_SIZE	1.0/60.0
+
+typedef struct 
+{
+	float32 value;
+	float32 time;
+} keyframe;
+
+typedef struct
+{
+	list<keyframe> keyframes;
+	float32* item;
+} itemkeys;
+
+typedef struct
+{
+	list<itemkeys> items;
+	obj* o;
+} keyobj;
 
 class CutsceneEngine : public Engine
 {
 private:
-  list<obj*> m_lActors;
+  list<keyobj> m_lActors;
   list<arc*> m_lArcs;
   Image* arcImg;
   ttvfs::VFSHelper vfs;
   Vec3 CameraPos;
-  list<obj*>::iterator m_CurSelectedActor;
-  list<obj*>::iterator m_CurSelectedParent;
+  list<keyobj>::iterator m_CurSelectedActor;
+  list<keyobj>::iterator m_CurSelectedParent;
   list<arc*>::iterator m_CurSelectedArc;
   Color selectionPulse;
   Color parentPulse;
   Object3D* m_centerDraw;	//For drawing objects' centers
+  Text* m_text;
   
   //Editing helpers
   Point m_ptOldPos;
@@ -53,13 +73,15 @@ public:
     //Program-specific functions
     void loadActors(string sFolderPath);
     void drawActors();
-	list<obj*>::iterator findClosestObject(Vec3 pos);	//Find object closest to given point
+	list<keyobj>::iterator findClosestObject(Vec3 pos);	//Find object closest to given point
 	
 	//Save and load XML detailing the layout
 	void save(string sFilename);
 	void load(string sFilename);
 	void writeObject(obj* object, XMLElement* parent, XMLDocument* doc);
 	void readObject(obj* object, XMLElement* actor);
+	
+	void changeFrame(float32 fTime);
 };
 
 void signalHandler(string sSignal); //Stub function for handling signals that come in from our HUD, and passing them on to myEngine

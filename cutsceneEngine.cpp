@@ -68,14 +68,16 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle,
 	m_bShowArcs = false;
 		
 	m_CurSelectedArc = m_lArcs.end();
+	
+	m_text = new Text("res/text.xml");
 }
 
 CutsceneEngine::~CutsceneEngine()
 {
 	errlog << "~CutsceneEngine" << endl;
 	save("res/editor.cutscene");	//Save our cutscene
-	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
-		delete (*i);
+	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+		delete i->o;
 	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
 		delete (*i);
 	delete m_centerDraw;
@@ -191,7 +193,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					//TODO: Broken. Why?
 					if(m_CurSelectedActor != m_lActors.end())
 					{
-						delete (*m_CurSelectedActor);
+						delete m_CurSelectedActor->o;
 						m_lActors.erase(m_CurSelectedActor);
 					}
 					m_CurSelectedActor = m_lActors.end();
@@ -203,7 +205,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					{
 						if(!m_bConstrainX && !m_bConstrainY)	//Snap Y back to 0 difference
 						{
-							(*m_CurSelectedActor)->pos.y = m_ptOldPos.y;
+							m_CurSelectedActor->o->pos.y = m_ptOldPos.y;
 							m_bConstrainX = true;
 						}
 					}
@@ -214,7 +216,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					{
 						if(!m_bConstrainY && !m_bConstrainX)	//Snap X back to 0 difference
 						{
-							(*m_CurSelectedActor)->pos.x = m_ptOldPos.x;
+							m_CurSelectedActor->o->pos.x = m_ptOldPos.x;
 							m_bConstrainY = true;
 						}
 					}
@@ -226,7 +228,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 						//Parent
 						if(m_CurSelectedParent != m_lActors.end() && m_CurSelectedActor != m_lActors.end() && m_CurSelectedParent != m_CurSelectedActor)
 						{
-							(*m_CurSelectedParent)->addChild(*m_CurSelectedActor);	//This automatically tests for duplication
+							m_CurSelectedParent->o->addChild(m_CurSelectedActor->o);	//This automatically tests for duplication
 						}
 					}
 					else if(keyDown(SDLK_LALT) || keyDown(SDLK_RALT))
@@ -234,7 +236,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 						//Remove parent
 						if(m_CurSelectedActor != m_lActors.end())
 						{
-							(*m_CurSelectedActor)->removeParenting();
+							m_CurSelectedActor->o->removeParenting();
 						}
 					}
 					else	//Set to be parent
@@ -264,14 +266,14 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 				case SDLK_1:
 					if(m_CurSelectedArc != m_lArcs.end() && m_CurSelectedActor != m_lActors.end())
 					{
-						(*m_CurSelectedArc)->obj1 = *m_CurSelectedActor;
+						(*m_CurSelectedArc)->obj1 = m_CurSelectedActor->o;
 					}
 					break;
 					
 				case SDLK_2:
 					if(m_CurSelectedArc != m_lArcs.end() && m_CurSelectedActor != m_lActors.end())
 					{
-						(*m_CurSelectedArc)->obj2 = *m_CurSelectedActor;
+						(*m_CurSelectedArc)->obj2 = m_CurSelectedActor->o;
 					}
 					break;
 				
@@ -322,7 +324,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					else if(m_bDragRot)
 					{
 						m_bDragRot = false;
-						(*m_CurSelectedActor)->rot = m_fOldRot;
+						m_CurSelectedActor->o->rot = m_fOldRot;
 					}
 				}
 				else if(m_CurSelectedActor != m_lActors.end())
@@ -330,11 +332,11 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					if(m_bDragRot)
 					{
 						m_bDragRot = false;
-						(*m_CurSelectedActor)->rot = m_fOldRot;
+						m_CurSelectedActor->o->rot = m_fOldRot;
 					}
 					else	//Start dragging
 					{
-						m_ptOldPos = (*m_CurSelectedActor)->pos;
+						m_ptOldPos = m_CurSelectedActor->o->pos;
 						m_bDragPos = true;
 					}
 				}
@@ -346,11 +348,11 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					if(m_bDragPos)
 					{
 						m_bDragPos = false;
-						(*m_CurSelectedActor)->pos = m_ptOldPos;
+						m_CurSelectedActor->o->pos = m_ptOldPos;
 					}
 					else	//Start rotating
 					{
-						m_fOldRot = (*m_CurSelectedActor)->rot;
+						m_fOldRot = m_CurSelectedActor->o->rot;
 						m_bDragRot = true;
 					}
 				}
@@ -372,12 +374,12 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 				else if(m_bDragPos)
 				{
 					m_bDragPos = false;
-					(*m_CurSelectedActor)->pos = m_ptOldPos;
+					m_CurSelectedActor->o->pos = m_ptOldPos;
 				}
 				else if(m_bDragRot)
 				{
 					m_bDragRot = false;
-					(*m_CurSelectedActor)->rot = m_fOldRot;
+					m_CurSelectedActor->o->rot = m_fOldRot;
 				}
 			}
             break;
@@ -403,13 +405,13 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             if(m_bDragPos && m_CurSelectedActor != m_lActors.end())
             {
 				if(!m_bConstrainY)
-					(*m_CurSelectedActor)->pos.x += event.motion.xrel/(mouseScaleFac());
+					m_CurSelectedActor->o->pos.x += event.motion.xrel/(mouseScaleFac());
 				if(!m_bConstrainX)
-					(*m_CurSelectedActor)->pos.y += event.motion.yrel/(mouseScaleFac());
+					m_CurSelectedActor->o->pos.y += event.motion.yrel/(mouseScaleFac());
             }
             else if(m_bDragRot && m_CurSelectedActor != m_lActors.end())
             {
-				Point center = (*m_CurSelectedActor)->getPos();
+				Point center = m_CurSelectedActor->o->getPos();
 				center *= mouseScaleFac();
 				center.x += getWidth()/2.0;
 				center.y += getHeight()/2.0;
@@ -422,7 +424,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 				float32 startAngle, endAngle;
 				startAngle = atan2((oldPos.y - center.y),(oldPos.x - center.x));
 				endAngle = atan2((newPos.y - center.y),(newPos.x - center.x));
-				(*m_CurSelectedActor)->rot += startAngle - endAngle;
+				m_CurSelectedActor->o->rot += startAngle - endAngle;
             }
 			else if(m_bPanScreen)
 			{
@@ -476,7 +478,9 @@ void CutsceneEngine::loadActors(string sFolderPath)
 			physSegment* seg = new physSegment();
 			seg->obj3D = o3d;
 			o->addSegment(seg);
-			m_lActors.push_back(o);
+			keyobj ko;
+			ko.o = o;
+			m_lActors.push_back(ko);
 		}
 	}
 }
@@ -484,13 +488,13 @@ void CutsceneEngine::loadActors(string sFolderPath)
 void CutsceneEngine::drawActors()
 {
 	glEnable(GL_LIGHTING);
-	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
 		if(i == m_CurSelectedParent)
-			(*i)->col.set(parentPulse.r, parentPulse.g, parentPulse.b, parentPulse.a);
+			i->o->col.set(parentPulse.r, parentPulse.g, parentPulse.b, parentPulse.a);
 		else if(i == m_CurSelectedActor)	//Selected actor pulses red
-			(*i)->col.set(selectionPulse.r, selectionPulse.g, selectionPulse.b, selectionPulse.a);
-		(*i)->draw();
+			i->o->col.set(selectionPulse.r, selectionPulse.g, selectionPulse.b, selectionPulse.a);
+		i->o->draw();
 		//Draw center
 		glPushMatrix();
 		if(i == m_CurSelectedParent)
@@ -499,8 +503,8 @@ void CutsceneEngine::drawActors()
 			glColor4f(1.0,0.0,0.0,1.0);	//Center of current actor is drawn red
 		else
 			glColor4f(0.0,1.0,0.0,1.0);
-		glTranslatef((*i)->getPos().x, 0.0f, (*i)->getPos().y);
-		glRotatef((*i)->getRot()*RAD2DEG, 0.0f, 1.0f, 0.0f);
+		glTranslatef(i->o->getPos().x, 0.0f, i->o->getPos().y);
+		glRotatef(i->o->getRot()*RAD2DEG, 0.0f, 1.0f, 0.0f);
 		glScalef(0.07f, 0.07f, 0.07f);
 		glDisable(GL_LIGHTING);
 		m_centerDraw->render();
@@ -510,21 +514,21 @@ void CutsceneEngine::drawActors()
 	}
 	
 	//Loop back through and clear colors, so we aren't dependent on list order for when colors are set or cleared
-	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
-		(*i)->col.clear();
+	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+		i->o->col.clear();
 	
 	glDisable(GL_LIGHTING);
 }
 
-list<obj*>::iterator CutsceneEngine::findClosestObject(Vec3 pos)
+list<keyobj>::iterator CutsceneEngine::findClosestObject(Vec3 pos)
 {
-	list<obj*>::iterator ret = m_lActors.end();
+	list<keyobj>::iterator ret = m_lActors.end();
 	float32 closestPos = FLT_MAX;
-	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
 		Vec3 objPos;
-		objPos.x = (*i)->getPos().x;
-		objPos.y = (*i)->getPos().y;
+		objPos.x = i->o->getPos().x;
+		objPos.y = i->o->getPos().y;
 		objPos.z = 0.0f;
 		
 		float32 dist = distanceSquared(objPos, pos);
@@ -581,18 +585,18 @@ void CutsceneEngine::save(string sFilename)
 	}
 	
 	//Write actors
-	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
-		if((*i)->parent == NULL)	//Only write toplevel if not a child of another actor
-			writeObject(*i, root, doc);
+		if(i->o->parent == NULL)	//Only write toplevel if not a child of another actor
+			writeObject(i->o, root, doc);
 	}
 	
 	//Clear leftover user data from objects
-	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 	{
-		if((*i)->usr != NULL)
-			free((*i)->usr);
-		(*i)->usr = NULL;
+		if(i->o->usr != NULL)
+			free(i->o->usr);
+		i->o->usr = NULL;
 	}
 	
 	doc->InsertFirstChild(root);
@@ -626,7 +630,9 @@ void CutsceneEngine::load(string sFilename)
 	{
 		obj* object = new obj();
 		readObject(object, actor);
-		m_lActors.push_back(object);
+		keyobj ko;
+		ko.o = object;
+		m_lActors.push_back(ko);
 	}
 	
 	//Load arcs (After we read in actors, so we know what objects these arcs are between)
@@ -669,14 +675,14 @@ void CutsceneEngine::load(string sFilename)
 		if(cObj1 != NULL)	//See if we can find object with this name
 		{
 			string sObj1 = cObj1;
-			for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)	//O(n), I know
+			for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)	//O(n), I know
 			{
-				if((*i)->usr != NULL)
+				if(i->o->usr != NULL)
 				{
-					string s = (char*)((*i)->usr);
+					string s = (char*)(i->o->usr);
 					if(s == sObj1)
 					{
-						newarc->obj1 = *i;
+						newarc->obj1 = i->o;
 						break;
 					}
 				}
@@ -685,14 +691,14 @@ void CutsceneEngine::load(string sFilename)
 		if(cObj2 != NULL)
 		{
 			string sObj2 = cObj2;
-			for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)	//O(n), I know
+			for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)	//O(n), I know
 			{
-				if((*i)->usr != NULL)
+				if(i->o->usr != NULL)
 				{
-					string s = (char*)((*i)->usr);
+					string s = (char*)(i->o->usr);
 					if(s == sObj2)
 					{
-						newarc->obj2 = *i;
+						newarc->obj2 = i->o;
 						break;
 					}
 				}
@@ -703,8 +709,8 @@ void CutsceneEngine::load(string sFilename)
 	}
 	
 	//Clear user data from objects
-	for(list<obj*>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
-		(*i)->usr = NULL;
+	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+		i->o->usr = NULL;
 	
 	delete doc;
 }
@@ -759,7 +765,7 @@ void CutsceneEngine::writeObject(obj* object, XMLElement* parent, XMLDocument* d
 	//Write children
 	for(list<obj*>::iterator i = object->children.begin(); i != object->children.end(); i++)
 	{
-		writeObject(*i, actor, doc);	//Recursive call
+		writeObject((*i), actor, doc);	//Recursive call
 	}
 		
 	parent->InsertEndChild(actor);
@@ -807,8 +813,42 @@ void CutsceneEngine::readObject(obj* object, XMLElement* actor)
 	{
 		obj* object2 = new obj();
 		readObject(object2, actor2);	//Recursive call for child objects
-		m_lActors.push_back(object2);
+		keyobj ko;
+		ko.o = object2;
+		m_lActors.push_back(ko);
 		object->addChild(object2, false);
 	}
 }
+
+void CutsceneEngine::changeFrame(float32 fTime)
+{
+	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
+	{
+		
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
