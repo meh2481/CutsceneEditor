@@ -188,7 +188,7 @@ float32 distanceSquared(Vec3 vec1, Vec3 vec2)
 	return (diff.x*diff.x + diff.y*diff.y + diff.z*diff.z);
 }
 
-float32 distance(Vec3 vec1, Vec3 vec2)
+float32 distanceBetween(Vec3 vec1, Vec3 vec2)
 {
 	return sqrt(distanceSquared(vec1, vec2));
 }

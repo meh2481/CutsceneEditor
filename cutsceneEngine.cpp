@@ -94,7 +94,8 @@ CutsceneEngine::~CutsceneEngine()
 
 float32 CutsceneEngine::mouseScaleFac()
 {
-	return ((-4.0/CameraPos.z) * 180.0);	//Magic numbers ftw
+	float32 diff = (float32)(getHeight())/(float32)(DEFAULT_HEIGHT);	//Because of the way gluPerspective() calculates aspect ratios...
+	return ((-4.0/CameraPos.z) * 180.0 * diff);	//Magic numbers ftw
 }
 
 Point CutsceneEngine::getPannedMousePos()
@@ -121,15 +122,15 @@ void CutsceneEngine::frame()
 void CutsceneEngine::draw()
 {
 	//Draw 3D stuff
-	glEnable(GL_CULL_FACE);	//Only draw the front faces of objects (faster)
+	glEnable(GL_CULL_FACE);	//Only draw the front faces of 3D objects (faster)
 	glEnable(GL_LIGHTING);
 	glLoadIdentity();
 	glTranslatef(CameraPos.x, CameraPos.y, CameraPos.z);
-	glRotatef(90.0f,1.0f,0.0f,0.0f);
+	glRotatef(90.0f,1.0f,0.0f,0.0f);	//Look down at objects
 	drawActors();
 	
 	//Draw 2D stuff
-	glDisable(GL_CULL_FACE);	//Only draw the front faces of objects (faster)
+	glDisable(GL_CULL_FACE);	//Draw both sides of 2D objects (So we can flip images for free)
 	glDisable(GL_LIGHTING);
 	glLoadIdentity();
 	glTranslatef(CameraPos.x, CameraPos.y, CameraPos.z);
@@ -142,7 +143,7 @@ void CutsceneEngine::draw()
 			(*i)->col.clear();
 	}
 		
-	//TODO: Draw HUD and such
+	//Draw HUD and such
 	glLoadIdentity();
 	glTranslatef(0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
 	Point texPos;

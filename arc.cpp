@@ -79,7 +79,7 @@ void arc::init()
 {
 	//Initialize values of array to sane defaults, so we don't start with a flat arc for one frame
 	for(int i = 0; i < numSegments; i++)
-		segmentPos[i] += randFloat(-max, max);
+		segmentPos[i] = randFloat(-max, max);
 	average();
 }
 
@@ -99,7 +99,7 @@ void arc::average()
       float fTot = 0.0;
       for(int j = i-avg; j < i+avg+1; j++)
       {
-		if(j > 0 && j < numSegments)
+		if(j >= 0 && j < numSegments)
 			fTot += segmentPos[j];
 	  }
       temp[i] = fTot / (float32)(avg*2+1);
