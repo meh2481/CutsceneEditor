@@ -18,7 +18,8 @@ private:
     GLuint   	m_hTex;
     string     	m_sFilename;
     uint32_t 	m_iWidth, m_iHeight;
-#ifdef __APPLE__
+//#ifdef __APPLE__
+#if 1
     uint32_t 	m_iRealWidth, m_iRealHeight;
 #endif
     uint32_t 	m_iID;  //TODO: Remove/isolate/optimize

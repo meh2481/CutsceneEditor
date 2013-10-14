@@ -77,6 +77,13 @@ string colorToString(Color c)
 	return oss.str();
 }
 
+string vec3ToString(Vec3 vec)
+{
+	ostringstream oss;
+	oss << vec.x << ", " << vec.y << ", " << vec.z;
+	return oss.str();
+}
+
 Vec3 vec3FromString(string s)
 {
 	s = stripCommas(s);

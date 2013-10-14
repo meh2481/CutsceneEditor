@@ -78,6 +78,10 @@ public:
 	
 	void changeFrame(float32 fTime);
 	void addFrame(keyobj* o, float32* pointer, float32 value, float32 fTime);	//Add a frame to this keyed object
+	
+	//Functions dealing with editor defaults
+	void loadConfig(string sFilename);
+	void saveConfig(string sFilename);
 };
 
 void signalHandler(string sSignal); //Stub function for handling signals that come in from our HUD, and passing them on to myEngine

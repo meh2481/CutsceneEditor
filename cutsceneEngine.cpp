@@ -80,7 +80,8 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle,
 CutsceneEngine::~CutsceneEngine()
 {
 	errlog << "~CutsceneEngine" << endl;
-	//save("res/editor.cutscene");	//Save our cutscene
+	//save("res/autosave.cutscene");	//Save our cutscene //DEBUG: Not for now, while I'm tinkering with stuff
+	saveConfig("res/editor.config");
 	for(list<keyobj>::iterator i = m_lActors.begin(); i != m_lActors.end(); i++)
 		delete i->o;
 	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
@@ -176,8 +177,11 @@ void CutsceneEngine::init(list<commandlineArg> sArgs)
 		}
 	}
 	
+	//Load our editor defaults
+	loadConfig("res/editor.config");
+	
 	//Load our XML file
-	load("res/editor.cutscene");
+	load("res/autosave.cutscene");
 }
 
 
@@ -195,25 +199,26 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             switch(event.key.keysym.sym)
             {
 
-                case SDLK_ESCAPE:
+                case SDL_SCANCODE_ESCAPE:
                     quit();
                     break;
                 
-                case SDLK_RETURN:
-                    if(keyDown(SDLK_LALT) || keyDown(SDLK_RALT))
+                case SDL_SCANCODE_RETURN:
+                    if(keyDown(SDL_SCANCODE_LALT) || keyDown(SDL_SCANCODE_RALT))
                     {
                       toggleFullscreen();
                     }
                     break;
 					
-				case SDLK_s:
-					if(keyDown(SDLK_LCTRL) || keyDown(SDLK_RCTRL))
+				case SDL_SCANCODE_S:
+					if(keyDown(SDL_SCANCODE_LCTRL) || keyDown(SDL_SCANCODE_RCTRL))
 					{
-						save("res/editor.cutscene");
+						//TODO Specify file to save, Save As with Ctrl-Shift-S
+						save("res/autosave.cutscene");
 					}
 					break;
 					
-				case SDLK_DELETE:	//Erase objects
+				case SDL_SCANCODE_DELETE:	//Erase objects
 					//TODO: Broken. Why?
 					if(m_CurSelectedActor != m_lActors.end())
 					{
@@ -224,7 +229,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					m_CurSelectedParent = m_lActors.end();
 					break;
 					
-				case SDLK_x: //Constrain to only move along X axis
+				case SDL_SCANCODE_X: //Constrain to only move along X axis
 					if(m_CurSelectedActor != m_lActors.end() && m_bDragPos)
 					{
 						if(!m_bConstrainX && !m_bConstrainY)	//Snap Y back to 0 difference
@@ -235,7 +240,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					}
 					break;
 					
-				case SDLK_y: //Constrain to only move along Y axis
+				case SDL_SCANCODE_Y: //Constrain to only move along Y axis
 					if(m_CurSelectedActor != m_lActors.end() && m_bDragPos)
 					{
 						if(!m_bConstrainY && !m_bConstrainX)	//Snap X back to 0 difference
@@ -246,8 +251,8 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					}
 					break;
 				
-				case SDLK_p:	//Parent objects to other objects
-					if(keyDown(SDLK_LCTRL) || keyDown(SDLK_RCTRL))	
+				case SDL_SCANCODE_P:	//Parent objects to other objects
+					if(keyDown(SDL_SCANCODE_LCTRL) || keyDown(SDL_SCANCODE_RCTRL))	
 					{
 						//Parent
 						if(m_CurSelectedParent != m_lActors.end() && m_CurSelectedActor != m_lActors.end() && m_CurSelectedParent != m_CurSelectedActor)
@@ -255,7 +260,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 							m_CurSelectedParent->o->addChild(m_CurSelectedActor->o);	//This automatically tests for duplication
 						}
 					}
-					else if(keyDown(SDLK_LALT) || keyDown(SDLK_RALT))
+					else if(keyDown(SDL_SCANCODE_LALT) || keyDown(SDL_SCANCODE_RALT))
 					{
 						//Remove parent
 						if(m_CurSelectedActor != m_lActors.end())
@@ -263,7 +268,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 							m_CurSelectedActor->o->removeParenting();
 						}
 					}
-					else if(keyDown(SDLK_LSHIFT) || keyDown(SDLK_RSHIFT))	//Play animation
+					else if(keyDown(SDL_SCANCODE_LSHIFT) || keyDown(SDL_SCANCODE_RSHIFT))	//Play animation
 					{
 						if(m_bIsPlaying)
 						{
@@ -287,35 +292,35 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					break;
 				
 				//Dealing with arcs
-				case SDLK_EQUALS:
+				case SDL_SCANCODE_EQUALS:
 					if(m_CurSelectedArc == m_lArcs.end())
 						m_CurSelectedArc = m_lArcs.begin();
 					else
 						m_CurSelectedArc++;
 					break;
 				
-				case SDLK_MINUS:
+				case SDL_SCANCODE_MINUS:
 					if(m_CurSelectedArc == m_lArcs.begin())
 						m_CurSelectedArc = m_lArcs.end();
 					else
 						m_CurSelectedArc--;
 					break;
 				
-				case SDLK_1:
+				case SDL_SCANCODE_1:
 					if(m_CurSelectedArc != m_lArcs.end() && m_CurSelectedActor != m_lActors.end())
 					{
 						(*m_CurSelectedArc)->obj1 = m_CurSelectedActor->o;
 					}
 					break;
 					
-				case SDLK_2:
+				case SDL_SCANCODE_2:
 					if(m_CurSelectedArc != m_lArcs.end() && m_CurSelectedActor != m_lActors.end())
 					{
 						(*m_CurSelectedArc)->obj2 = m_CurSelectedActor->o;
 					}
 					break;
 				
-				case SDLK_a:
+				case SDL_SCANCODE_A:
 					if(m_bShowArcs)
 					{
 						m_bShowArcs = false;
@@ -340,7 +345,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					}
 					break;
 					
-				case SDLK_RIGHT:
+				case SDL_SCANCODE_RIGHT:
 					if(m_bIsPlaying)
 					{
 						m_fCurrentFrameTime = m_fPlayingTime;
@@ -350,7 +355,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					changeFrame(m_fCurrentFrameTime);
 					break;
 					
-				case SDLK_LEFT:
+				case SDL_SCANCODE_LEFT:
 					if(m_bIsPlaying)
 					{
 						m_fCurrentFrameTime = m_fPlayingTime;
@@ -362,7 +367,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					changeFrame(m_fCurrentFrameTime);
 					break;
 					
-				case SDLK_UP:
+				case SDL_SCANCODE_UP:
 					if(m_bIsPlaying)
 					{
 						m_fCurrentFrameTime = m_fPlayingTime;
@@ -372,7 +377,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					changeFrame(m_fCurrentFrameTime);
 					break;
 					
-				case SDLK_DOWN:
+				case SDL_SCANCODE_DOWN:
 					if(m_bIsPlaying)
 					{
 						m_fCurrentFrameTime = m_fPlayingTime;
@@ -384,6 +389,10 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					changeFrame(m_fCurrentFrameTime);
 					break;
 					
+				case SDL_SCANCODE_0:	//Reset camera pos
+					CameraPos.x = CameraPos.y = 0;
+					CameraPos.z = -4;
+					break;
 					
 					
               }
@@ -400,7 +409,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 		case SDL_MOUSEBUTTONDOWN:
             if(event.button.button == SDL_BUTTON_LEFT)	//Left mouse button: Drag
             {
-				if(keyDown(SDLK_LCTRL) || keyDown(SDLK_RCTRL))	//Ctrl-clicking is equivalent to MMB
+				if(keyDown(SDL_SCANCODE_LCTRL) || keyDown(SDL_SCANCODE_RCTRL))	//Ctrl-clicking is equivalent to MMB
 				{
 					if(!m_bDragPos && !m_bDragRot)
 						m_bPanScreen = true;
@@ -440,16 +449,6 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 					}
 				}
             }
-			else if(event.button.button == SDL_BUTTON_WHEELUP)
-			{
-				if(!m_bDragPos && !m_bDragRot && !m_bPanScreen)
-					CameraPos.z = min(CameraPos.z + 0.2, 0.0);
-			}
-			else if(event.button.button == SDL_BUTTON_WHEELDOWN)
-			{
-				if(!m_bDragPos && !m_bDragRot && !m_bPanScreen)
-					CameraPos.z = max(CameraPos.z - 0.2, -20.0);
-			}
 			else if(event.button.button == SDL_BUTTON_MIDDLE)
 			{
 				if(!m_bDragPos && !m_bDragRot)
@@ -466,6 +465,19 @@ void CutsceneEngine::handleEvent(SDL_Event event)
 				}
 			}
             break;
+			
+		case SDL_MOUSEWHEEL:
+			if(event.wheel.y < 0)//== SDL_BUTTON_WHEELUP)
+			{
+				if(!m_bDragPos && !m_bDragRot && !m_bPanScreen)
+					CameraPos.z = min(CameraPos.z + 0.2, 0.0);
+			}
+			else// if(event.button.button == SDL_BUTTON_WHEELDOWN)
+			{
+				if(!m_bDragPos && !m_bDragRot && !m_bPanScreen)
+					CameraPos.z = max(CameraPos.z - 0.2, -20.0);
+			}
+			break;
 
         case SDL_MOUSEBUTTONUP:
             if(event.button.button == SDL_BUTTON_LEFT)
@@ -1011,7 +1023,83 @@ void CutsceneEngine::addFrame(keyobj* o, float32* pointer, float32 value, float3
 	
 }
 
+void CutsceneEngine::loadConfig(string sFilename)
+{
+	//Open file
+	XMLDocument* doc = new XMLDocument;
+	int iErr = doc->LoadFile(sFilename.c_str());
+	if(iErr != XML_NO_ERROR)
+	{
+		cout << "Error parsing editor file " << sFilename << ": Error " << iErr << ". Ignoring..." << endl;
+		delete doc;
+		return;	//No file; ignore
+	}
+	
+	//Grab root element
+	XMLElement* root = doc->RootElement();
+	if(root == NULL)
+	{
+		cout << "Error: Root element NULL in XML file " << sFilename << endl;
+		delete doc;
+		return;
+	}
+	
+	XMLElement* window = root->FirstChildElement("window");
+	if(window != NULL)
+	{
+		bool bFullscreen = isFullscreen();
+		bool bMaximized = isMaximized();
+		uint32_t width = getWidth();
+		uint32_t height = getHeight();
+		
+		window->QueryUnsignedAttribute("width", &width);
+		window->QueryUnsignedAttribute("height", &height);
+		window->QueryBoolAttribute("fullscreen", &bFullscreen);
+		window->QueryBoolAttribute("maximized", &bMaximized);
+		
+		changeScreenResolution(width, height);
+		setFullscreen(bFullscreen);
+		if(bMaximized && !isMaximized() && !bFullscreen)
+			maximizeWindow();
+	}
+	
+	XMLElement* camera = root->FirstChildElement("camera");
+	if(camera != NULL)
+	{
+		const char* cCameraPos = camera->Attribute("pos");
+		if(cCameraPos != NULL)
+		{
+			CameraPos = vec3FromString(cCameraPos);
+			if(CameraPos.z == 0)
+				CameraPos.z = -4;
+		}
+	}
+	
+	delete doc;
+}
 
+void CutsceneEngine::saveConfig(string sFilename)
+{
+	errlog << "Saving editor config XML " << sFilename << endl;
+	XMLDocument* doc = new XMLDocument;
+	XMLElement* root = doc->NewElement("config");
+	
+	XMLElement* window = doc->NewElement("window");
+	window->SetAttribute("width", getWidth());
+	window->SetAttribute("height", getHeight());
+	window->SetAttribute("fullscreen", isFullscreen());
+	window->SetAttribute("maximized", isMaximized());
+	//window->SetAttribute("", );
+	root->InsertEndChild(window);
+	
+	XMLElement* camera = doc->NewElement("camera");
+	camera->SetAttribute("pos", vec3ToString(CameraPos).c_str());
+	root->InsertEndChild(camera);
+	
+	doc->InsertFirstChild(root);
+	doc->SaveFile(sFilename.c_str());
+	delete doc;
+}
 
 
 

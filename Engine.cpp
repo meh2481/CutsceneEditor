@@ -30,10 +30,10 @@ bool Engine::_frame()
             m_ptCursorPos.x = event.motion.x;
             m_ptCursorPos.y = event.motion.y;
         }
-		else if(event.type == SDL_VIDEORESIZE)
+		else if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
 		{
 			if(m_bResizable)
-				changeScreenResolution(event.resize.w, event.resize.h);
+				changeScreenResolution(event.window.data1, event.window.data2);
 			else
 				errlog << "Error! Resize event generated, but resizable flag not set." << endl;
 		}
@@ -43,7 +43,7 @@ bool Engine::_frame()
     }
 
     //Get current key state
-    m_iKeystates = SDL_GetKeyState(NULL);
+    m_iKeystates = SDL_GetKeyboardState(NULL);
 
     float32 fCurTime = (float32)SDL_GetTicks()/1000.0;
     if(m_fAccumulatedTime <= fCurTime)
@@ -80,7 +80,7 @@ void Engine::_render()
 	glPopMatrix();
 	
     // End rendering and update the screen
-    SDL_GL_SwapBuffers();
+     SDL_GL_SwapWindow(m_Window);
 }
 
 Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable)
@@ -97,6 +97,7 @@ Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable
     m_bShowCursor = true;
     setup_sdl();
     m_bFullscreen = false;  //TODO: Start in fullscreen mode
+	m_bIsMaximized = false;
     setup_opengl();
 
     //Initialize engine stuff
@@ -223,8 +224,6 @@ void Engine::setFramerate(float32 fFramerate)
 
 void Engine::setup_sdl()
 {
-  const SDL_VideoInfo* video;
-
   if(SDL_Init(SDL_INIT_VIDEO) < 0)
   {
   	fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -234,24 +233,8 @@ void Engine::setup_sdl()
   // Quit SDL properly on exit
   atexit(SDL_Quit);
 
-  // Get the current video information
-  video = SDL_GetVideoInfo();
-  if(video == NULL)
-  {
-  	fprintf(stderr, "Couldn't get video information: %s\n", SDL_GetError());
-    exit(1);
-  }
-
-  // Set the minimum requirements for the OpenGL window
-  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-  //Set icon for window
-  SDL_Surface *image;
+  //TODO: Set icon for window
+/*  SDL_Surface *image;
 #ifdef __APPLE__
   image = SDL_LoadBMP("res/icon.bmp");
 #else
@@ -259,50 +242,34 @@ void Engine::setup_sdl()
 #endif
   SDL_WM_SetCaption(m_sTitle.c_str(), NULL);
   SDL_WM_SetIcon(image, NULL);
-  SDL_FreeSurface(image);
-
-  
-  //Get supported screen resolutions (TODO: SDL 2.0)
-  m_iNumScreenModes = 0;
-  
-  // Get available fullscreen/hardware modes 
-  m_rcScreenModes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
-  
-  // Check if there are any modes available 
-  if (m_rcScreenModes == (SDL_Rect**)0) 
-  {
-    errlog << "No SDL screen modes available!" << endl;
-    m_iWidth = 800;
-    m_iHeight = 600;
-  }
-   
-  // Check if our resolution is restricted 
-  if (m_rcScreenModes == (SDL_Rect**)-1) 
-  {
-    errlog << "All fullscreen resolutions available." << endl;
-    m_iWidth = 800;
-    m_iHeight = 600;
-  }
-  else
-  {
-       // Print valid modes 
-       errlog << "Available fullscreen modes:" << endl;
-       for (int i = 0; m_rcScreenModes[i]; ++i)
-       {
-         errlog << "  " << m_rcScreenModes[i]->w << " x " << m_rcScreenModes[i]->h << endl;
-         m_iNumScreenModes++;
-       }
-  }
+  SDL_FreeSurface(image);*/
   
   // Create SDL window
-  Uint32 flags = SDL_OPENGL;
+  Uint32 flags = SDL_WINDOW_OPENGL;
   if(m_bResizable)
-	flags |= SDL_RESIZABLE;
-  if(SDL_SetVideoMode(m_iWidth, m_iHeight, video->vfmt->BitsPerPixel, flags) == 0)
+	flags |= SDL_WINDOW_RESIZABLE;
+  m_Window = SDL_CreateWindow(m_sTitle.c_str(),
+                             SDL_WINDOWPOS_UNDEFINED,
+                             SDL_WINDOWPOS_UNDEFINED,
+                             m_iWidth, 
+							 m_iHeight,
+                             flags);
+
+  if(m_Window == NULL)
   {
-  	fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
+  	errlog << "Couldn't set video mode: " << SDL_GetError() << endl;
     exit(1);
   }
+  SDL_GLContext glcontext = SDL_GL_CreateContext(m_Window);
+
+  
+  // Set the minimum requirements for the OpenGL window
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   
   //Hide system cursor for SDL, so we can use our own
   SDL_ShowCursor(0);
@@ -368,14 +335,14 @@ void Engine::changeScreenResolution(float32 w, float32 h)
  
 	//get window handle from SDL
 	SDL_VERSION(&info.version);
-	if(SDL_GetWMInfo(&info) == -1) 
+	if(SDL_GetWindowWMInfo(m_Window, &info) == -1) 
 	{
 		errlog << "SDL_GetWMInfo #1 failed" << endl;
 		return;
 	}
 
 	//get device context handle
-	HDC tempDC = GetDC(info.window);
+	HDC tempDC = GetDC(info.info.win.window);
 
 	// create temporary context
 	HGLRC tempRC = wglCreateContext(tempDC);
@@ -384,10 +351,10 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 		errlog << "wglCreateContext failed" << endl;
 		return;
 	}
-
+	
 	//share resources to temporary context
 	SetLastError(0);
-	if(!wglShareLists(info.hglrc, tempRC))
+	if(!wglShareLists(wglGetCurrentContext(), tempRC))
 	{
 		errlog << "wglShareLists #1 failed" << endl;
 		return;
@@ -396,37 +363,42 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	
 	screenDrawWidth = m_iWidth = w;
 	screenDrawHeight = m_iHeight = h;
-	const SDL_VideoInfo* video = SDL_GetVideoInfo();
-	if(video == NULL)
-	{
-		fprintf(stderr, "Couldn't get video information: %s\n", SDL_GetError());
-		exit(1);
-	}
+	
 	//Create SDL window
-	int flags = SDL_OPENGL;
+	int flags = SDL_WINDOW_OPENGL;
 	if(m_bFullscreen)
-		flags |= SDL_FULLSCREEN;
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	if(m_bResizable)
-		flags |= SDL_RESIZABLE;
-	if(SDL_SetVideoMode(m_iWidth, m_iHeight, video->vfmt->BitsPerPixel, flags) == 0)
+		flags |= SDL_WINDOW_RESIZABLE;
+		
+	m_Window = SDL_CreateWindow(m_sTitle.c_str(),
+                             SDL_WINDOWPOS_UNDEFINED,
+                             SDL_WINDOWPOS_UNDEFINED,
+                             m_iWidth, 
+							 m_iHeight,
+                             flags);
+
+	if(m_Window == NULL)
 	{
-		fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
+		errlog << "Couldn't set video mode: " << SDL_GetError() << endl;
 		exit(1);
 	}
+	SDL_GLContext glcontext = SDL_GL_CreateContext(m_Window);
+	
 	//Set OpenGL back up
 	setup_opengl();
 	
 #ifdef _WIN32
 	//previously used structure may possibly be invalid, to be sure we get it again
 	SDL_VERSION(&info.version);
-	if(SDL_GetWMInfo(&info) == -1) 
+	if(SDL_GetWindowWMInfo(m_Window, &info) == -1) 
 	{
 		errlog << "SDL_GetWMInfo #2 failed" << endl;
 		return;
 	}
  
 	//share resources to new SDL-created context
-	if(!wglShareLists(tempRC, info.hglrc))
+	if(!wglShareLists(tempRC, wglGetCurrentContext()))
 	{
 		errlog << "wglShareLists #2 failed" << endl;
 		return;
@@ -453,22 +425,49 @@ void Engine::toggleFullscreen()
   changeScreenResolution(m_iWidth, m_iHeight);
 }
 
-list<resolution> Engine::getAvailableResolutions()
+void Engine::setFullscreen(bool bFullscreen)
 {
-  list<resolution> lResolutions;
-  for (int i = 0; m_rcScreenModes[i]; ++i)
-  {
-    resolution r;
-    r.w = m_rcScreenModes[i]->w;
-    r.h = m_rcScreenModes[i]->h;
-    lResolutions.push_back(r);
-  }
-  return lResolutions;  
+	if(m_bFullscreen == bFullscreen) 
+		return;
+	toggleFullscreen();
+}
+
+void Engine::maximizeWindow()
+{
+	SDL_SysWMinfo SysInfo; //Will hold our Window information
+	SDL_VERSION(&SysInfo.version); //Set SDL version
+	 
+	if(SDL_GetWindowWMInfo(m_Window, &SysInfo) <= 0) 
+	{
+		errlog << "Unable to get SDL window: " << SDL_GetError() << endl;
+		return;	//Ignore; minor error anyway
+	}
+#ifdef __WIN32__
+	HWND WindowHandle = SysInfo.info.win.window; //Win32 window handle
+	ShowWindow(WindowHandle, SW_MAXIMIZE);
+#else
+	Window WindowHandle = SysInfo.window; //X11 window handle
+	errlog << "TODO: Maximize on Linux/Mac" << endl;
+#endif
+}
+
+list<SDL_DisplayMode> Engine::getAvailableResolutions()
+{
+	list<SDL_DisplayMode> lResolutions;
+	for(int i = 0; i < SDL_GetNumDisplayModes(0); i++)
+	{
+		SDL_DisplayMode mode;
+		if(SDL_GetDisplayMode(0, i, &mode) == 0)
+		{
+			lResolutions.push_back(mode);
+		}
+	}
+	return lResolutions;  
 }
 
 void Engine::setCursorPos(int32_t x, int32_t y)
 {
-    SDL_WarpMouse(x,y);
+    SDL_WarpMouseInWindow(m_Window, x, y);
 //#ifdef __APPLE__
 //    hideCursor(); //TODO: Warping the mouse shows it again in Mac, and this doesn't work. Hermph.
 //#endif

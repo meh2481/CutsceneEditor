@@ -288,11 +288,20 @@ void Object3D::fromTiny3DFile(string sFilename)
 	free(faces);
 }
 
+int power_of_two(unsigned int val)
+{
+	int ret = 1;
+	while(ret < val)
+		ret *= 2;
+	return ret;
+}
+
 void Object3D::setTexture(string sFilename)
 {
     m_sTexFilename = sFilename;
     errlog << "Creating 3D object texture: " << sFilename << endl;
-#ifndef __APPLE__
+//#ifndef __APPLE__
+#if 0
     SDL_Surface *surface;
     int mode;
 

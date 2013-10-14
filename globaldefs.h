@@ -16,14 +16,13 @@ using namespace tinyxml2;
 #include "include/VFSTools.h"
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
+#include "FreeImage.h"
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
-#include "FreeImage.h"
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <SDL/SDL_image.h>
 #endif
 
 
@@ -92,6 +91,7 @@ Point pointFromString(string s);    //Get a point from comma-separated values in
 Color colorFromString(string s);    //Get a color from comma-separated values in a string
 string colorToString(Color c);
 Vec3 vec3FromString(string s);		//Get a 3D point from comma-separated values in a string
+string vec3ToString(Vec3 vec);
 int32_t randInt(int32_t min, int32_t max);  //Get a random integer
 float32 randFloat(float32 min, float32 max);        //Get a random float32
 float32 distanceSquared(Vec3 vec1, Vec3 vec2);		//Get the distance between two vectors squared

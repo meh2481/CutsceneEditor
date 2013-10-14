@@ -18,9 +18,12 @@ Image::Image(string sFilename)
   _addImgReload(this);
 }
 
+int power_of_two(unsigned int val);
+
 void Image::_load(string sFilename)
 {
-#ifdef __APPLE__  //For some reason, SDL_Image isn't working for me in PPC Mac. Hermph. Using FreeImage for now instead.
+//#ifdef __APPLE__  //For some reason, SDL_Image isn't working for me in PPC Mac. Hermph. Using FreeImage for now instead.
+#if 1
 	errlog << "Load " << sFilename << endl;
 	//image format
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
@@ -170,7 +173,8 @@ void Image::draw(Rect rcDrawPos, Rect rcImgPos)
   
   
     int32_t w, h;
-#ifdef __APPLE__
+//#ifdef __APPLE__
+#if 1
     w = m_iRealWidth;
     h = m_iRealHeight;
 #else

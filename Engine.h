@@ -19,12 +19,6 @@
 #define RMB	0
 #define MMB 2
 
-struct resolution
-{
-  int w;
-  int h;
-} ;
-
 typedef struct
 {
 	string sSwitch, sValue;
@@ -35,6 +29,7 @@ class Engine
 private:
     //Variables for use by the engine
 	string m_sTitle;
+	SDL_Window* m_Window;
 	list<commandlineArg> lCommandLine;
     b2World* m_physicsWorld;
     Point m_ptCursorPos;
@@ -51,10 +46,10 @@ private:
     bool m_bQuitting;   //Stop the game if this turns true
     uint16_t m_iImgScaleFac;    //How much images are scaled up by
     uint16_t m_iWidth, m_iHeight;
-    Uint8 *m_iKeystates;    //Keep track of keys that are pressed/released so we can poll as needed
-    SDL_Rect** m_rcScreenModes; //Screen modes that are available
+    const Uint8 *m_iKeystates;    //Keep track of keys that are pressed/released so we can poll as needed
     int m_iNumScreenModes;      //Number of screen modes that are available
     bool m_bFullscreen;
+	bool m_bIsMaximized;
 	bool m_bResizable;
     float32 m_fLastCycle;     //When the last cycle was
 
@@ -108,7 +103,11 @@ public:
     void setGravity(float32 x, float32 y)   {setGravity(Point(x,y));};
     void changeScreenResolution(float32 w, float32 h);  //Change resolution mid-game and reload OpenGL textures as needed
     void toggleFullscreen();                            //Switch between fullscreen/windowed modes
-    list<resolution> getAvailableResolutions();         //Get available fullscreen resolutions
+	void setFullscreen(bool bFullscreen);				//Set fullscreen to true or false as needed
+	bool isFullscreen()	{return m_bFullscreen;};
+	bool isMaximized()	{return m_bIsMaximized;};		//TODO
+	void maximizeWindow();								//Call window manager to maximize application window
+    list<SDL_DisplayMode> getAvailableResolutions();         //Get available fullscreen resolutions
     void addInterpolation(Interpolate* inter);
     void clearInterpolations();
 
