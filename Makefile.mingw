@@ -1,6 +1,6 @@
 SHELL=C:/Windows/System32/cmd.exe
-objects := 3DObject.o Image.o Engine.o Object.o Text.o globaldefs.o hud.o main.o tinyxml2.o Interpolate.o cutsceneEngine.o arc.o
-libs := -L./lib/Win32 -lopengl32 -lglu32 -ltinyxml2 -lttvfs -lBox2D -static-libgcc -static-libstdc++ ./lib/Win32/FreeImage.lib -lmingw32 -lSDL2main -lSDL2 -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion -luuid
+objects := 3DObject.o Image.o Engine.o Object.o Text.o globaldefs.o hud.o main.o tinyxml2.o Interpolate.o cutsceneEngine.o arc.o opengl-api.o
+libs := -L./lib/Win32 -lglu32 -ltinyxml2 -lttvfs -lBox2D -static-libgcc -static-libstdc++ ./lib/Win32/FreeImage.lib -lmingw32 -lSDL2main -lSDL2 -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion -luuid
 HEADER := -I./ -I./include/
 
 all: CutsceneEditor

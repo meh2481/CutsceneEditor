@@ -222,13 +222,26 @@ void Engine::setFramerate(float32 fFramerate)
         m_fTargetTime = 1.0 / m_fFramerate;
 }
 
+#include "opengl-api.h"
+
 void Engine::setup_sdl()
 {
-  if(SDL_Init(SDL_INIT_VIDEO) < 0)
-  {
-  	fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
-    exit(1);
-  }
+
+	if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+    {
+		errlog << "SDL_InitSubSystem Error: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+
+    errlog << "Loading OpenGL..." << std::endl;
+
+    if (SDL_GL_LoadLibrary(NULL) == -1)
+    {
+		errlog << "SDL_GL_LoadLibrary Error: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+	
+	errlog << "Done loading OpenGL." << std::endl;
 
   // Quit SDL properly on exit
   atexit(SDL_Quit);
@@ -243,6 +256,13 @@ void Engine::setup_sdl()
   SDL_WM_SetCaption(m_sTitle.c_str(), NULL);
   SDL_WM_SetIcon(image, NULL);
   SDL_FreeSurface(image);*/
+  
+  /* TODO: Intelligent drawing
+  
+  <fgenesis> i recommend using glViewport and related functions so you don't have to scale stuff into [-1 .. 1] anymore
+<fgenesis> let your gfx card do the heavy lifting, not the CPU
+<fgenesis> also have a look at glOrtho() and glMatrixMode(), you'll need those
+*/
   
   // Create SDL window
   Uint32 flags = SDL_WINDOW_OPENGL;
@@ -273,6 +293,8 @@ void Engine::setup_sdl()
   
   //Hide system cursor for SDL, so we can use our own
   SDL_ShowCursor(0);
+  
+  OpenGLAPI::LoadSymbols();
   
 }
 
@@ -330,7 +352,7 @@ void Engine::setup_opengl()
 void Engine::changeScreenResolution(float32 w, float32 h)
 {
 //In Windoze, we can copy the graphics memory to a new context, so we don't have to reload all our images and stuff
-#ifdef _WIN32
+#if false//#ifdef _WIN32
 	SDL_SysWMinfo info;
  
 	//get window handle from SDL
@@ -388,7 +410,7 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	//Set OpenGL back up
 	setup_opengl();
 	
-#ifdef _WIN32
+#if false//#ifdef _WIN32
 	//previously used structure may possibly be invalid, to be sure we get it again
 	SDL_VERSION(&info.version);
 	if(SDL_GetWindowWMInfo(m_Window, &info) == -1) 
@@ -434,7 +456,7 @@ void Engine::setFullscreen(bool bFullscreen)
 
 void Engine::maximizeWindow()
 {
-	SDL_SysWMinfo SysInfo; //Will hold our Window information
+	/* TODO SDL_SysWMinfo SysInfo; //Will hold our Window information
 	SDL_VERSION(&SysInfo.version); //Set SDL version
 	 
 	if(SDL_GetWindowWMInfo(m_Window, &SysInfo) <= 0) 
@@ -448,7 +470,7 @@ void Engine::maximizeWindow()
 #else
 	Window WindowHandle = SysInfo.window; //X11 window handle
 	errlog << "TODO: Maximize on Linux/Mac" << endl;
-#endif
+#endif*/
 }
 
 list<SDL_DisplayMode> Engine::getAvailableResolutions()

@@ -21,6 +21,7 @@ CutsceneEditor.exe
 # Editor output
 *.cutscene
 err.log
+editor.config
 
 # Resources
 *.tiny3d
