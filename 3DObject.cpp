@@ -384,11 +384,17 @@ void Object3D::setTexture(string sFilename)
   
 	int w = power_of_two(width);
 	int h = power_of_two(height);
-	int mode;
+	int mode, modeflip;
 	if(FreeImage_GetBPP(dib) == 24) // RGB 24bit
+	{
 		mode = GL_RGB;
+		modeflip = GL_BGR;
+	}
 	else if(FreeImage_GetBPP(dib) == 32)  // RGBA 32bit
-		mode = GL_RGBA;	
+	{
+		mode = GL_RGBA;
+		modeflip = GL_BGRA;
+	}
 	FIBITMAP *bitmap2 = FreeImage_Allocate(w, h, FreeImage_GetBPP(dib));
 	FreeImage_Paste(bitmap2, dib, 0, 0, 255);
 	FreeImage_FlipVertical(bitmap2);  //Apparently, FreeImage handles this strangely. Flipping beforehand doesn't work right.
@@ -407,7 +413,7 @@ void Object3D::setTexture(string sFilename)
 	//bind to the new texture ID
 	glBindTexture(GL_TEXTURE_2D, m_tex);
 	//store the texture data for OpenGL use
-	glTexImage2D(GL_TEXTURE_2D, 0, mode, w, h, 0, mode, GL_UNSIGNED_BYTE, bits);
+	glTexImage2D(GL_TEXTURE_2D, 0, mode, w, h, 0, modeflip, GL_UNSIGNED_BYTE, bits);
   
 	// these affect how this texture is drawn later on...
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);

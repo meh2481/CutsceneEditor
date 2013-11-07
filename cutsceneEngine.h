@@ -25,7 +25,6 @@ class CutsceneEngine : public Engine
 private:
   list<keyobj> m_lActors;
   list<arc*> m_lArcs;
-  Image* arcImg;
   ttvfs::VFSHelper vfs;
   Vec3 CameraPos;
   list<keyobj>::iterator m_CurSelectedActor;
@@ -35,7 +34,7 @@ private:
   Color parentPulse;
   Object3D* m_centerDraw;	//For drawing objects' centers
   float32 m_fCurrentFrameTime;
-  Text* m_text;
+  //Text* m_text;	//TODO: Way to duplicate fonts without crashing
   bool m_bIsPlaying;
   float32 m_fPlayingTime;
   

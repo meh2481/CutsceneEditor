@@ -114,6 +114,8 @@ Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable
 
 Engine::~Engine()
 {
+	SDL_DestroyWindow(m_Window);
+
     //Clean up our image map
 	errlog << "Clearing images" << endl;
     clearImages();
@@ -389,11 +391,14 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	//Create SDL window
 	int flags = SDL_WINDOW_OPENGL;
 	if(m_bFullscreen)
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	if(m_bResizable)
-		flags |= SDL_WINDOW_RESIZABLE;
-		
-	m_Window = SDL_CreateWindow(m_sTitle.c_str(),
+		flags |= SDL_WINDOW_RESIZABLE;	//TODO
+	
+	SDL_SetWindowSize(m_Window, m_iWidth, m_iHeight);
+
+	
+	/*m_Window = SDL_CreateWindow(m_sTitle.c_str(),
                              SDL_WINDOWPOS_UNDEFINED,
                              SDL_WINDOWPOS_UNDEFINED,
                              m_iWidth, 
@@ -404,7 +409,7 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	{
 		errlog << "Couldn't set video mode: " << SDL_GetError() << endl;
 		exit(1);
-	}
+	}*/
 	SDL_GLContext glcontext = SDL_GL_CreateContext(m_Window);
 	
 	//Set OpenGL back up

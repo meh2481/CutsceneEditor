@@ -69,7 +69,7 @@ CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle,
 		
 	m_CurSelectedArc = m_lArcs.end();
 	
-	m_text = new Text("res/font.xml");
+	//m_text = new Text("res/font.xml");
 	m_fCurrentFrameTime = 0.0f;
 	m_bIsPlaying = false;
 	
@@ -86,11 +86,12 @@ CutsceneEngine::~CutsceneEngine()
 		delete i->o;
 	for(list<arc*>::iterator i = m_lArcs.begin(); i != m_lArcs.end(); i++)
 		delete (*i);
+	errlog << "delete center draw" << endl;
 	delete m_centerDraw;
-	delete arcImg;
-	m_hud->destroy();
+	errlog << "delete hud" << endl;
 	delete m_hud;
-	delete m_text;
+	//errlog << "delete text" << endl;
+	//delete m_text;
 }
 
 float32 CutsceneEngine::mouseScaleFac()
@@ -147,14 +148,14 @@ void CutsceneEngine::draw()
 	//Draw HUD and such
 	glLoadIdentity();
 	glTranslatef(0.0f, 0.0f, MAGIC_ZOOM_NUMBER);
-	Point texPos;
-	texPos.SetZero();
-	ostringstream oss;
-	if(!m_bIsPlaying)
-		oss << "frame " << (int)(m_fCurrentFrameTime / KEYFRAME_SIZE);
-	else
-		oss << "frame " << (int)(m_fPlayingTime / KEYFRAME_SIZE);
-	m_text->render(oss.str(), texPos);
+	//Point texPos;
+	//texPos.SetZero();
+	//ostringstream oss;
+	//if(!m_bIsPlaying)
+	//	oss << "frame " << (int)(m_fCurrentFrameTime / KEYFRAME_SIZE);
+	//else
+	//	oss << "frame " << (int)(m_fPlayingTime / KEYFRAME_SIZE);
+	//m_text->render(oss.str(), texPos);
 	//...
 	m_hud->draw(0);
 }

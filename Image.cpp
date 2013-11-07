@@ -22,8 +22,6 @@ int power_of_two(unsigned int val);
 
 void Image::_load(string sFilename)
 {
-//#ifdef __APPLE__  //For some reason, SDL_Image isn't working for me in PPC Mac. Hermph. Using FreeImage for now instead.
-#if 1
 	errlog << "Load " << sFilename << endl;
 	//image format
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
@@ -63,11 +61,17 @@ void Image::_load(string sFilename)
   
 	int w = power_of_two(width);
 	int h = power_of_two(height);
-	int mode;
+	int mode, modeflip;
 	if(FreeImage_GetBPP(dib) == 24) // RGB 24bit
+	{
 		mode = GL_RGB;
+		modeflip = GL_BGR;
+	}
 	else if(FreeImage_GetBPP(dib) == 32)  // RGBA 32bit
-		mode = GL_RGBA;	
+	{
+		mode = GL_RGBA;
+		modeflip = GL_BGRA;
+	}
 	FIBITMAP *bitmap2 = FreeImage_Allocate(w, h, FreeImage_GetBPP(dib));
 	FreeImage_Paste(bitmap2, dib, 0, 0, 255);
 	FreeImage_FlipVertical(bitmap2);  //Apparently, FreeImage handles this strangely. Flipping beforehand doesn't work right.
@@ -89,57 +93,10 @@ void Image::_load(string sFilename)
 	//bind to the new texture ID
 	glBindTexture(GL_TEXTURE_2D, m_hTex);
 	//store the texture data for OpenGL use
-	glTexImage2D(GL_TEXTURE_2D, 0, mode, w, h, 0, mode, GL_UNSIGNED_BYTE, bits);
+	glTexImage2D(GL_TEXTURE_2D, 0, mode, w, h, 0, modeflip, GL_UNSIGNED_BYTE, bits);
   
 	//Free FreeImage's copy of the data
 	FreeImage_Unload(bitmap2);
-  
-#else
-  SDL_Surface *surface;
-  int mode;
-  
-  surface = IMG_Load(sFilename.c_str());	//Use SDL_image to load various formats
-  
-  // could not load filename
-  if(!surface)
-  {
-    errlog << "No img " << sFilename << std::endl;
-    m_hTex = 0;
-    return;
-  }
-  
-  // work out what format to tell glTexImage2D to use...
-  if(surface->format->BytesPerPixel == 3) // RGB 24bit
-  {
-    mode = GL_RGB;
-  }
-  else if(surface->format->BytesPerPixel == 4)  // RGBA 32bit
-  {
-    mode = GL_RGBA;
-  }
-  else //Unsupported format
-  {
-    SDL_FreeSurface(surface);
-    m_hTex = 0;
-    return;
-  }
-	
-  unsigned char* data = (unsigned char*)surface->pixels;
-  
-  m_iWidth=surface->w;
-  m_iHeight=surface->h;
-  // create one texture name
-  glGenTextures(1, &m_hTex);
-  
-  // tell opengl to use the generated texture name
-  glBindTexture(GL_TEXTURE_2D, m_hTex);
-  
-  // this reads from the sdl surface and puts it into an opengl texture
-  glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h, 0, mode, GL_UNSIGNED_BYTE, data);
-  
-  // clean up
-  SDL_FreeSurface(surface);
-#endif //defined __APPLE__
 }
 
 Image::~Image()
