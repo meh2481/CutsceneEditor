@@ -6,8 +6,11 @@
 #include "cutsceneEngine.h"
 
 #ifdef _WIN32
-#undef main
+#define ICONNAME "res/icon.png"
+#else
+#define ICONNAME "res/icon.ico"
 #endif
+
 int main(int argc, char *argv[])
 {
     errlog << "Starting program" << endl;
@@ -15,7 +18,7 @@ int main(int argc, char *argv[])
     errlog << "Starting FreeImage" << endl;
     FreeImage_Initialise();
 #endif
-    CutsceneEngine* eng = new CutsceneEngine(800, 600, "Cutscene Editor", "res/icon.png", true); //Create our engine
+    CutsceneEngine* eng = new CutsceneEngine(800, 600, "Cutscene Editor", ICONNAME, true); //Create our engine
 
     eng->setFramerate(60);
 	eng->commandline(argc, argv);
