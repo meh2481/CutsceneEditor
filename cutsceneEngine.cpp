@@ -198,7 +198,7 @@ void CutsceneEngine::handleEvent(SDL_Event event)
     {
         //Key pressed
         case SDL_KEYDOWN:
-            switch(event.key.keysym.sym)
+            switch(event.key.keysym.scancode)
             {
 
                 case SDL_SCANCODE_ESCAPE:

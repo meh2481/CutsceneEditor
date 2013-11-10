@@ -493,7 +493,7 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	if(m_bFullscreen)
 		SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	if(m_bResizable)
-		flags |= SDL_WINDOW_RESIZABLE;	//TODO
+		flags |= SDL_WINDOW_RESIZABLE;
 	
 	SDL_SetWindowSize(m_Window, m_iWidth, m_iHeight);
 
@@ -536,7 +536,10 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 void Engine::toggleFullscreen()
 {
   m_bFullscreen = !m_bFullscreen;
-  changeScreenResolution(m_iWidth, m_iHeight);
+  if(m_bFullscreen)
+	SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+  else
+	SDL_SetWindowFullscreen(m_Window, 0);
 }
 
 void Engine::setFullscreen(bool bFullscreen)
