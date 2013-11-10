@@ -64,7 +64,14 @@ GL_FUNC(void,glHint,(GLenum target,  GLenum mode),(target,mode),)
 GL_FUNC(void,glShadeModel,(GLenum  mode),(mode),)
 GL_FUNC(void,glLightfv,(GLenum light, GLenum pname, const GLfloat *params),(light,pname,params),)
 
-
+//Win32 context stuff
+#ifdef _WIN32
+#include <windows.h>
+GL_FUNC(HGLRC,wglCreateContext,(HDC hdc),(hdc),)
+GL_FUNC(HGLRC,wglGetCurrentContext,(void),(),)
+GL_FUNC(BOOL,wglShareLists,(HGLRC hglrc1, HGLRC hglrc2),(hglrc1, hglrc2),)
+GL_FUNC(BOOL,wglDeleteContext,(HGLRC hglrc),(hglrc),)
+#endif
 
 
 
