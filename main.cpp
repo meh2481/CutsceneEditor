@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     errlog << "Starting FreeImage" << endl;
     FreeImage_Initialise();
 #endif
-    CutsceneEngine* eng = new CutsceneEngine(800, 600, "Cutscene Editor", true); //Create our engine
+    CutsceneEngine* eng = new CutsceneEngine(800, 600, "Cutscene Editor", "res/icon.png", true); //Create our engine
 
     eng->setFramerate(60);
 	eng->commandline(argc, argv);

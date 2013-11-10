@@ -29,6 +29,7 @@ class Engine
 private:
     //Variables for use by the engine
 	string m_sTitle;
+	string m_sIcon;
 	SDL_Window* m_Window;
 	list<commandlineArg> lCommandLine;
     b2World* m_physicsWorld;
@@ -49,7 +50,6 @@ private:
     const Uint8 *m_iKeystates;    //Keep track of keys that are pressed/released so we can poll as needed
     int m_iNumScreenModes;      //Number of screen modes that are available
     bool m_bFullscreen;
-	bool m_bIsMaximized;
 	bool m_bResizable;
     float32 m_fLastCycle;     //When the last cycle was
 
@@ -60,6 +60,7 @@ private:
     void _interpolations(float32 dt); //update any interpolating variables
     void setup_sdl();
     void setup_opengl();
+	void _loadicon();					//Load icon and set window to have said icon
 
     Engine(){}; //Default constructor isn't callable
 
@@ -73,7 +74,7 @@ protected:
 
 public:
     //Constructor/destructor
-    Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable = false);
+    Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, string sIcon, bool bResizable = false);
     ~Engine();
 
     //Methods
@@ -105,7 +106,9 @@ public:
     void toggleFullscreen();                            //Switch between fullscreen/windowed modes
 	void setFullscreen(bool bFullscreen);				//Set fullscreen to true or false as needed
 	bool isFullscreen()	{return m_bFullscreen;};
-	bool isMaximized()	{return m_bIsMaximized;};		//TODO
+	bool isMaximized()	{return (SDL_GetWindowFlags(m_Window) & SDL_WINDOW_MAXIMIZED);};	//TODO: SDL2 is broken here
+	Point getWindowPos();	//Get the window position
+	void setWindowPos(Point pos);	//Set window position
 	void maximizeWindow();								//Call window manager to maximize application window
     list<SDL_DisplayMode> getAvailableResolutions();         //Get available fullscreen resolutions
     void addInterpolation(Interpolate* inter);

@@ -4,7 +4,7 @@
 */
 
 #include "Engine.h"
-#include <SDL/SDL_syswm.h>
+//#include <SDL/SDL_syswm.h>
 ofstream errlog("err.log");
 
 
@@ -18,12 +18,71 @@ GLfloat LightPosition[] = { 0.0f, 0.0f, 2.0f, 1.0f };
 extern int screenDrawWidth;
 extern int screenDrawHeight;
 
+void PrintEvent(const SDL_Event * event)
+{
+    if (event->type == SDL_WINDOWEVENT) {
+        switch (event->window.event) {
+        case SDL_WINDOWEVENT_SHOWN:
+            printf("Window %d shown\n", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_HIDDEN:
+            printf("Window %d hidden\n", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_EXPOSED:
+            printf("Window %d exposed\n", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_MOVED:
+            printf("Window %d moved to %d,%d\n",
+                    event->window.windowID, event->window.data1,
+                    event->window.data2);
+            break;
+        case SDL_WINDOWEVENT_RESIZED:
+            printf("Window %d resized to %dx%d\n",
+                    event->window.windowID, event->window.data1,
+                    event->window.data2);
+            break;
+        case SDL_WINDOWEVENT_MINIMIZED:
+            printf("Window %d minimized\n", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_MAXIMIZED:
+            printf("Window %d maximized\n", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_RESTORED:
+            printf("Window %d restored\n", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_ENTER:
+            printf("Mouse entered window %d\n",
+                    event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_LEAVE:
+            printf("Mouse left window %d\n", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_FOCUS_GAINED:
+            printf("Window %d gained keyboard focus\n",
+                    event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+            printf("Window %d lost keyboard focus\n",
+                    event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_CLOSE:
+            printf("Window %d closed\n", event->window.windowID);
+            break;
+        default:
+            printf("Window %d got unknown event %d\n",
+                    event->window.windowID, event->window.event);
+            break;
+        }
+    }
+}
+
 bool Engine::_frame()
 {
     //Handle input events from SDL
     SDL_Event event;
     while(SDL_PollEvent(&event))
     {
+		//PrintEvent(&event);
         //Update internal cursor position if cursor has moved
         if(event.type == SDL_MOUSEMOTION)
         {
@@ -83,9 +142,10 @@ void Engine::_render()
      SDL_GL_SwapWindow(m_Window);
 }
 
-Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable)
+Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, string sIcon, bool bResizable)
 {
 	m_sTitle = sTitle;
+	m_sIcon = sIcon;
 	m_bResizable = bResizable;
     b2Vec2 gravity(0.0, 9.8);  //Vector for our world's gravity
     m_physicsWorld = new b2World(gravity);
@@ -97,7 +157,6 @@ Engine::Engine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable
     m_bShowCursor = true;
     setup_sdl();
     m_bFullscreen = false;  //TODO: Start in fullscreen mode
-	m_bIsMaximized = false;
     setup_opengl();
 
     //Initialize engine stuff
@@ -242,29 +301,9 @@ void Engine::setup_sdl()
 		errlog << "SDL_GL_LoadLibrary Error: " << SDL_GetError() << std::endl;
         exit(1);
     }
-	
-	errlog << "Done loading OpenGL." << std::endl;
 
   // Quit SDL properly on exit
   atexit(SDL_Quit);
-
-  //TODO: Set icon for window
-/*  SDL_Surface *image;
-#ifdef __APPLE__
-  image = SDL_LoadBMP("res/icon.bmp");
-#else
-  image = IMG_Load("res/icon.png");
-#endif
-  SDL_WM_SetCaption(m_sTitle.c_str(), NULL);
-  SDL_WM_SetIcon(image, NULL);
-  SDL_FreeSurface(image);*/
-  
-  /* TODO: Intelligent drawing
-  
-  <fgenesis> i recommend using glViewport and related functions so you don't have to scale stuff into [-1 .. 1] anymore
-<fgenesis> let your gfx card do the heavy lifting, not the CPU
-<fgenesis> also have a look at glOrtho() and glMatrixMode(), you'll need those
-*/
   
   // Create SDL window
   Uint32 flags = SDL_WINDOW_OPENGL;
@@ -296,7 +335,9 @@ void Engine::setup_sdl()
   //Hide system cursor for SDL, so we can use our own
   SDL_ShowCursor(0);
   
-  OpenGLAPI::LoadSymbols();
+  OpenGLAPI::LoadSymbols();	//Load our OpenGL symbols to use
+  
+  _loadicon();	//Load our window icon
   
 }
 
@@ -351,6 +392,65 @@ void Engine::setup_opengl()
     
 }
 
+void Engine::_loadicon()	//Load icon into SDL window
+{
+	errlog << "Load icon " << m_sIcon << endl;
+	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+	FIBITMAP *dib(0);
+	BYTE* bits(0);
+	unsigned int width(0), height(0);
+	
+	//check the file signature and deduce its format
+	fif = FreeImage_GetFileType(m_sIcon.c_str(), 0);
+	//if still unknown, try to guess the file format from the file extension
+	if(fif == FIF_UNKNOWN) 
+		fif = FreeImage_GetFIFFromFilename(m_sIcon.c_str());
+	//if still unkown, return failure
+	if(fif == FIF_UNKNOWN)
+	{
+		errlog << "Unknown image type for file " << m_sIcon << endl;
+		return;
+	}
+  
+	//check that the plugin has reading capabilities and load the file
+	if(FreeImage_FIFSupportsReading(fif))
+		dib = FreeImage_Load(fif, m_sIcon.c_str());
+	else
+		errlog << "File " << m_sIcon << " doesn't support reading." << endl;
+	//if the image failed to load, return failure
+	if(!dib)
+	{
+		errlog << "Error loading image " << m_sIcon.c_str() << endl;
+		return;
+	}  
+	//retrieve the image data
+  
+	//get the image width and height
+	width = FreeImage_GetWidth(dib);
+	height = FreeImage_GetHeight(dib);
+	
+	FreeImage_FlipVertical(dib);
+  
+	bits = FreeImage_GetBits(dib);	//if this somehow one of these failed (they shouldn't), return failure
+	if((bits == 0) || (width == 0) || (height == 0))
+	{
+		errlog << "Something went terribly horribly wrong with getting image bits; just sit and wait for the singularity" << endl;
+		return;
+	}
+	
+	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(bits, width, height, FreeImage_GetBPP(dib), FreeImage_GetPitch(dib), 
+													0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+	if(surface == NULL)
+		errlog << "NULL surface for icon " << m_sIcon << endl;
+	else
+	{
+		SDL_SetWindowIcon(m_Window, surface);
+		SDL_FreeSurface(surface);
+	}
+  
+	FreeImage_Unload(dib);
+}
+
 void Engine::changeScreenResolution(float32 w, float32 h)
 {
 //In Windoze, we can copy the graphics memory to a new context, so we don't have to reload all our images and stuff
@@ -397,19 +497,6 @@ void Engine::changeScreenResolution(float32 w, float32 h)
 	
 	SDL_SetWindowSize(m_Window, m_iWidth, m_iHeight);
 
-	
-	/*m_Window = SDL_CreateWindow(m_sTitle.c_str(),
-                             SDL_WINDOWPOS_UNDEFINED,
-                             SDL_WINDOWPOS_UNDEFINED,
-                             m_iWidth, 
-							 m_iHeight,
-                             flags);
-
-	if(m_Window == NULL)
-	{
-		errlog << "Couldn't set video mode: " << SDL_GetError() << endl;
-		exit(1);
-	}*/
 	SDL_GLContext glcontext = SDL_GL_CreateContext(m_Window);
 	
 	//Set OpenGL back up
@@ -459,27 +546,29 @@ void Engine::setFullscreen(bool bFullscreen)
 	toggleFullscreen();
 }
 
+Point Engine::getWindowPos()
+{
+	Point p;
+	int x, y;
+	SDL_GetWindowPosition(m_Window, &x, &y);
+	p.x = x;
+	p.y = y;
+	return p;
+}
+
+void Engine::setWindowPos(Point pos)
+{
+	SDL_SetWindowPosition(m_Window, pos.x, pos.y);
+}
+
 void Engine::maximizeWindow()
 {
-	/* TODO SDL_SysWMinfo SysInfo; //Will hold our Window information
-	SDL_VERSION(&SysInfo.version); //Set SDL version
-	 
-	if(SDL_GetWindowWMInfo(m_Window, &SysInfo) <= 0) 
-	{
-		errlog << "Unable to get SDL window: " << SDL_GetError() << endl;
-		return;	//Ignore; minor error anyway
-	}
-#ifdef __WIN32__
-	HWND WindowHandle = SysInfo.info.win.window; //Win32 window handle
-	ShowWindow(WindowHandle, SW_MAXIMIZE);
-#else
-	Window WindowHandle = SysInfo.window; //X11 window handle
-	errlog << "TODO: Maximize on Linux/Mac" << endl;
-#endif*/
+	SDL_MaximizeWindow(m_Window);
 }
 
 list<SDL_DisplayMode> Engine::getAvailableResolutions()
 {
+	//TODO: SDL 2.0 way
 	list<SDL_DisplayMode> lResolutions;
 	for(int i = 0; i < SDL_GetNumDisplayModes(0); i++)
 	{

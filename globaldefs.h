@@ -88,6 +88,7 @@ Vec3 rotateAroundVector(Vec3 vecToRot, Vec3 rotVec, float32 fAngle);    //Rotate
 string stripCommas(string s);       //Strip all the commas from s, leaving spaces in their place
 Rect rectFromString(string s);      //Get a rectangle from comma-separated values in a string
 Point pointFromString(string s);    //Get a point from comma-separated values in a string
+string pointToString(Point p);
 Color colorFromString(string s);    //Get a color from comma-separated values in a string
 string colorToString(Color c);
 Vec3 vec3FromString(string s);		//Get a 3D point from comma-separated values in a string

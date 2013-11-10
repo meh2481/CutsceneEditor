@@ -22,7 +22,8 @@ void fillRect(Rect rc, uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
     g_pGlobalEngine->fillRect(rc, red, green, blue, alpha);
 }
 
-CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable) : Engine(iWidth, iHeight, sTitle, bResizable)
+CutsceneEngine::CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle, string sIcon, bool bResizable) : 
+Engine(iWidth, iHeight, sTitle, sIcon, bResizable)
 {
 	g_pGlobalEngine = this;
 	vfs.Prepare();
@@ -468,12 +469,12 @@ void CutsceneEngine::handleEvent(SDL_Event event)
             break;
 			
 		case SDL_MOUSEWHEEL:
-			if(event.wheel.y < 0)//== SDL_BUTTON_WHEELUP)
+			if(event.wheel.y > 0)
 			{
 				if(!m_bDragPos && !m_bDragRot && !m_bPanScreen)
 					CameraPos.z = min(CameraPos.z + 0.2, 0.0);
 			}
-			else// if(event.button.button == SDL_BUTTON_WHEELDOWN)
+			else
 			{
 				if(!m_bDragPos && !m_bDragRot && !m_bPanScreen)
 					CameraPos.z = max(CameraPos.z - 0.2, -20.0);
@@ -1058,6 +1059,13 @@ void CutsceneEngine::loadConfig(string sFilename)
 		window->QueryBoolAttribute("fullscreen", &bFullscreen);
 		window->QueryBoolAttribute("maximized", &bMaximized);
 		
+		const char* cWindowPos = window->Attribute("pos");
+		if(cWindowPos != NULL)
+		{
+			Point pos = pointFromString(cWindowPos);
+			setWindowPos(pos);
+		}
+		
 		changeScreenResolution(width, height);
 		setFullscreen(bFullscreen);
 		if(bMaximized && !isMaximized() && !bFullscreen)
@@ -1090,7 +1098,7 @@ void CutsceneEngine::saveConfig(string sFilename)
 	window->SetAttribute("height", getHeight());
 	window->SetAttribute("fullscreen", isFullscreen());
 	window->SetAttribute("maximized", isMaximized());
-	//window->SetAttribute("", );
+	window->SetAttribute("pos", pointToString(getWindowPos()).c_str());
 	root->InsertEndChild(window);
 	
 	XMLElement* camera = doc->NewElement("camera");

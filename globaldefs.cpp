@@ -58,6 +58,13 @@ Point pointFromString(string s)
     return pt;
 }
 
+string pointToString(Point p)
+{
+	ostringstream oss;
+	oss << p.x << "," << p.y;
+	return oss.str();
+}
+
 Color colorFromString(string s)
 {
     s = stripCommas(s);

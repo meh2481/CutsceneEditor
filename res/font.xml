@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <font name="blocky">
-  <image path="res/images/blocky.png" />
+  <image path="res/images/blocfont.png" />
   
   <char ascii="a" rect="0,0,15,9" />
   <char ascii="b" rect="16,0,31,9" />

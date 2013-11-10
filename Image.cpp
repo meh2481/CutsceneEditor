@@ -47,10 +47,12 @@ void Image::_load(string sFilename)
 	//check that the plugin has reading capabilities and load the file
 	if(FreeImage_FIFSupportsReading(fif))
 		dib = FreeImage_Load(fif, sFilename.c_str());
+	else
+		errlog << "File " << sFilename << " doesn't support reading." << endl;
 	//if the image failed to load, return failure
 	if(!dib)
 	{
-		errlog << "Error loading image " << sFilename << endl;
+		errlog << "Error loading image " << sFilename.c_str() << endl;
 		return;
 	}  
 	//retrieve the image data
@@ -113,6 +115,14 @@ void Image::draw(Rect rcDrawPos)
     Rect rcImg = {0,0,m_iWidth,m_iHeight};
     draw(rcDrawPos, rcImg);
 }
+
+
+  /* TODO: Intelligent drawing
+  
+  <fgenesis> i recommend using glViewport and related functions so you don't have to scale stuff into [-1 .. 1] anymore
+<fgenesis> let your gfx card do the heavy lifting, not the CPU
+<fgenesis> also have a look at glOrtho() and glMatrixMode(), you'll need those
+*/
 
 void Image::draw(Rect rcDrawPos, Rect rcImgPos)
 {

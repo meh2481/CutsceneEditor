@@ -145,9 +145,9 @@ void HUDTextbox::draw(float32 fCurTime)
 
 void HUDTextbox::setText(uint32_t iNum)
 {
-    char c[256];
-    sprintf(c, "%lu", (long unsigned int)iNum);
-    setText(c);
+    ostringstream oss;
+    oss << iNum;
+    setText(oss.str());
 }
 
 //-------------------------------------------------------------------------------------

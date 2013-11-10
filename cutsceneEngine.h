@@ -59,7 +59,7 @@ protected:
 	Point getPannedMousePos();
 
 public:
-    CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle, bool bResizable = false);
+    CutsceneEngine(uint16_t iWidth, uint16_t iHeight, string sTitle, string sIcon, bool bResizable = false);
     ~CutsceneEngine();
 
     void hudSignalHandler(string sSignal);  //For handling signals that come from the HUD
