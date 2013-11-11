@@ -14,10 +14,8 @@
 int main(int argc, char *argv[])
 {
     errlog << "Starting program" << endl;
-#ifdef __APPLE__
     errlog << "Starting FreeImage" << endl;
     FreeImage_Initialise();
-#endif
     CutsceneEngine* eng = new CutsceneEngine(800, 600, "Cutscene Editor", ICONNAME, true); //Create our engine
 
     eng->setFramerate(60);
@@ -25,10 +23,8 @@ int main(int argc, char *argv[])
     eng->start(); //Get the engine rolling
 	errlog << "Deleting engine" << endl;
     delete eng;
-#ifdef __APPLE__
     errlog << "Closing FreeImage" << endl;
     FreeImage_DeInitialise();
-#endif
     errlog << "Ending program happily" << endl;
     return 0;
 }
